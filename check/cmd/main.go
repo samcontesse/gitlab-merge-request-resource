@@ -53,7 +53,7 @@ func main() {
 			continue
 		}
 
-		if mr.UpdatedAt.Before(request.Version.UpdatedAt) {
+		if !mr.UpdatedAt.After(request.Version.UpdatedAt) {
 			continue
 		}
 

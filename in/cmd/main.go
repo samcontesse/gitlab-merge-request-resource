@@ -30,6 +30,8 @@ func main() {
 	api.SetBaseURL(request.Source.GetBaseURL())
 
 	mr, _, err := api.MergeRequests.GetMergeRequest(request.Source.GetProjectPath(), request.Version.ID)
+	mr.UpdatedAt = &request.Version.UpdatedAt
+
 	commit, _, err := api.Commits.GetCommit(mr.ProjectID, mr.SHA)
 
 	if err != nil {
