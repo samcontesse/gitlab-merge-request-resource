@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e -u -x
+
+mkdir -p assets
+
+#export GOARCH=amd64
+#export GOOS=linux
+
+go build -o assets/check check/cmd/main.go
+go build -o assets/in in/cmd/main.go
+go build -o assets/out out/cmd/main.go

@@ -1,0 +1,17 @@
+#!/bin/bash
+# vim: set ft=sh
+
+set -e -u -x
+
+export GOPATH=$PWD/gopath
+export PATH=$GOPATH/bin:$PATH
+
+BUILD_DIR=$PWD/built-resource
+
+cd $GOPATH/src/github.com/samcontesse/gitlab-merge-request-resource
+
+go get -u github.com/golang/dep/cmd/dep
+
+./scripts/build
+
+cp -a assets/ Dockerfile $BUILD_DIR

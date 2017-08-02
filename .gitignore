@@ -1,0 +1,6 @@
+.idea/
+assets/
+samples/
+vendor/
+
+.DS_Store
