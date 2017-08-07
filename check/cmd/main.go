@@ -38,6 +38,10 @@ func main() {
 			continue
 		}
 
+		if strings.Contains(commit.Title, "[skip ci]") || strings.Contains(commit.Message, "[skip ci]") {
+			continue
+		}
+
 		mr.UpdatedAt = commit.CommittedDate
 
 		if !request.Source.SkipTriggerComment {
