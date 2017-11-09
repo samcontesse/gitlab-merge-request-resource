@@ -8,6 +8,7 @@ import (
 	"github.com/samcontesse/gitlab-merge-request-resource/check"
 	"github.com/samcontesse/gitlab-merge-request-resource/common"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -21,8 +22,8 @@ func main() {
 	api := gitlab.NewClient(nil, request.Source.PrivateToken)
 	api.SetBaseURL(request.Source.GetBaseURL())
 
-	options := &gitlab.ListMergeRequestsOptions{State: gitlab.String("opened"), OrderBy: gitlab.String("updated_at")}
-	requests, _, err := api.MergeRequests.ListMergeRequests(request.Source.GetProjectPath(), options)
+	options := &gitlab.ListProjectMergeRequestsOptions{State: gitlab.String("opened"), OrderBy: gitlab.String("updated_at")}
+	requests, _, err := api.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)
 
 	if err != nil {
 		common.Fatal("retrieving opened merge requests", err)
@@ -33,6 +34,7 @@ func main() {
 	for _, mr := range requests {
 
 		commit, _, err := api.Commits.GetCommit(mr.ProjectID, mr.SHA)
+		updatedAt := commit.CommittedDate
 
 		if err != nil {
 			continue
@@ -42,11 +44,9 @@ func main() {
 			continue
 		}
 
-		mr.UpdatedAt = commit.CommittedDate
-
 		if !request.Source.SkipTriggerComment {
 			notes, _, _ := api.Notes.ListMergeRequestNotes(mr.ProjectID, mr.ID)
-			refreshUpdatedAt(notes, mr)
+			updatedAt = getMostRecentUpdateTime(notes, updatedAt)
 		}
 
 		if request.Source.SkipNotMergeable && mr.MergeStatus != "can_be_merged" {
@@ -57,11 +57,11 @@ func main() {
 			continue
 		}
 
-		if !mr.UpdatedAt.After(request.Version.UpdatedAt) {
+		if !updatedAt.After(request.Version.UpdatedAt) {
 			continue
 		}
 
-		versions = append(versions, resource.Version{ID: mr.ID, UpdatedAt: *mr.UpdatedAt})
+		versions = append(versions, resource.Version{ID: mr.ID, UpdatedAt: *updatedAt})
 
 	}
 
@@ -69,10 +69,11 @@ func main() {
 
 }
 
-func refreshUpdatedAt(notes []*gitlab.Note, mr *gitlab.MergeRequest) {
+func getMostRecentUpdateTime(notes []*gitlab.Note, updatedAt *time.Time) *time.Time {
 	for _, note := range notes {
-		if strings.Contains(note.Body, "[trigger ci]") && mr.UpdatedAt.Before(*note.UpdatedAt) {
-			mr.UpdatedAt = note.UpdatedAt
+		if strings.Contains(note.Body, "[trigger ci]") && updatedAt.Before(*note.UpdatedAt) {
+			return note.UpdatedAt
 		}
 	}
+	return updatedAt
 }

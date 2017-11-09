@@ -8,14 +8,20 @@
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/samcontesse/gitlab-merge-request-resource"
+  packages = [".","check","common","in","out"]
+  revision = "07a9d633f231a7ff8077cfa50119823af292c9d9"
+
+[[projects]]
   name = "github.com/xanzy/go-gitlab"
   packages = ["."]
-  revision = "5b756e2fdc9f21fd4791fa1453b8fe01af0f82e2"
-  version = "v0.5.1"
+  revision = "32211f6ae06b961bf512cf18e8b58c5a7ea4727f"
+  version = "v0.7.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e002e35d6c2017bf6304237d84fa9e34088204e39ad3f0486acc9645b7790e69"
+  inputs-digest = "278e9b6c35b8aed23a3f3ee80026e9620725782a19c34153eb57729dc34b72cb"
   solver-name = "gps-cdcl"
   solver-version = 1
