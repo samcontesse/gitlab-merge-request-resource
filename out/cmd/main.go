@@ -40,14 +40,14 @@ func main() {
 	api := gitlab.NewClient(nil, request.Source.PrivateToken)
 	api.SetBaseURL(request.Source.GetBaseURL())
 
-	state := gitlab.BuildState(request.Params.Status)
+	state := gitlab.BuildState(gitlab.BuildStateValue(request.Params.Status))
 	target := resource.GetTargetURL()
 	name := resource.GetServerName()
 
 	options := gitlab.SetCommitStatusOptions{
 		Name:      &name,
 		TargetURL: &target,
-		State:     state,
+		State:     *state,
 	}
 
 	api.Commits.SetCommitStatus(mr.ProjectID, revision, &options)

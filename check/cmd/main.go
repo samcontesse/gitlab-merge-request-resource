@@ -29,7 +29,7 @@ func main() {
 		common.Fatal("retrieving opened merge requests", err)
 	}
 
-	versions := []resource.Version{}
+	var versions []resource.Version
 
 	for _, mr := range requests {
 
@@ -45,7 +45,7 @@ func main() {
 		}
 
 		if !request.Source.SkipTriggerComment {
-			notes, _, _ := api.Notes.ListMergeRequestNotes(mr.ProjectID, mr.ID)
+			notes, _, _ := api.Notes.ListMergeRequestNotes(mr.ProjectID, mr.ID, &gitlab.ListMergeRequestNotesOptions{})
 			updatedAt = getMostRecentUpdateTime(notes, updatedAt)
 		}
 
@@ -60,6 +60,17 @@ func main() {
 		if !updatedAt.After(request.Version.UpdatedAt) {
 			continue
 		}
+
+		target := resource.GetTargetURL()
+		name := resource.GetServerName()
+
+		options := gitlab.SetCommitStatusOptions{
+			Name:      &name,
+			TargetURL: &target,
+			State:     gitlab.Pending,
+		}
+
+		api.Commits.SetCommitStatus(mr.ProjectID, mr.SHA, &options)
 
 		versions = append(versions, resource.Version{ID: mr.ID, UpdatedAt: *updatedAt})
 
