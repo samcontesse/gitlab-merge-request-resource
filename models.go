@@ -8,11 +8,12 @@ import (
 )
 
 type Source struct {
-	URI                string `json:"uri"`
-	PrivateToken       string `json:"private_token"`
-	SkipWorkInProgress bool   `json:"skip_work_in_progress,omitempty"`
-	SkipNotMergeable   bool   `json:"skip_not_mergeable,omitempty"`
-	SkipTriggerComment bool   `json:"skip_trigger_comment,omitempty"`
+	URI                string   `json:"uri"`
+	PrivateToken       string   `json:"private_token"`
+	SkipWorkInProgress bool     `json:"skip_work_in_progress,omitempty"`
+	SkipNotMergeable   bool     `json:"skip_not_mergeable,omitempty"`
+	SkipTriggerComment bool     `json:"skip_trigger_comment,omitempty"`
+	Labels             []string `json:"labels,omitempty"`
 }
 
 type Version struct {
