@@ -30,7 +30,7 @@ func main() {
 	api.SetBaseURL(request.Source.GetBaseURL())
 
 	mr, _, err := api.MergeRequests.GetMergeRequest(request.Source.GetProjectPath(), request.Version.ID)
-	mr.UpdatedAt = &request.Version.UpdatedAt
+	mr.UpdatedAt = request.Version.UpdatedAt
 
 	commit, _, err := api.Commits.GetCommit(mr.ProjectID, mr.SHA)
 
@@ -54,7 +54,7 @@ func main() {
 		common.Fatal("resetting HEAD to "+mr.SHA, err)
 	}
 
-	addCommitNotes(mr, "mr");
+	addCommitNotes(mr, "mr")
 	response := in.Response{Version: request.Version, Metadata: buildMetadata(mr, commit)}
 
 	json.NewEncoder(os.Stdout).Encode(response)
@@ -108,7 +108,7 @@ func addCommitNotes(object interface{}, ref string) {
 	}
 
 	cmd := "git"
-	args := []string{"notes", "--ref=" + ref, "add", "-f", "-m", string(notes) }
+	args := []string{"notes", "--ref=" + ref, "add", "-f", "-m", string(notes)}
 	if err := exec.Command(cmd, args...).Run(); err != nil {
 		common.Fatal("adding notes `"+ref+"` to commit", err)
 	}

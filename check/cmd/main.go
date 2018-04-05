@@ -58,7 +58,7 @@ func main() {
 			continue
 		}
 
-		if !updatedAt.After(request.Version.UpdatedAt) {
+		if request.Version.UpdatedAt != nil && !updatedAt.After(*request.Version.UpdatedAt) {
 			continue
 		}
 
@@ -73,7 +73,7 @@ func main() {
 
 		api.Commits.SetCommitStatus(mr.ProjectID, mr.SHA, &options)
 
-		versions = append(versions, resource.Version{ID: mr.ID, UpdatedAt: *updatedAt})
+		versions = append(versions, resource.Version{ID: mr.IID, UpdatedAt: updatedAt})
 
 	}
 

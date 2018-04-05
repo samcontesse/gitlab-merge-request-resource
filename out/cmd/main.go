@@ -53,8 +53,8 @@ func main() {
 	api.Commits.SetCommitStatus(mr.ProjectID, revision, &options)
 
 	response := out.Response{Version: resource.Version{
-		ID:        mr.ID,
-		UpdatedAt: *mr.UpdatedAt,
+		ID:        mr.IID,
+		UpdatedAt: mr.UpdatedAt,
 	}}
 
 	json.NewEncoder(os.Stdout).Encode(response)

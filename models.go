@@ -18,7 +18,7 @@ type Source struct {
 
 type Version struct {
 	ID        int       `json:"id,string"`
-	UpdatedAt time.Time `json:"updated_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 type Metadata []MetadataField
