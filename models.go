@@ -40,7 +40,7 @@ type BuildMetadata struct {
 func (source *Source) GetBaseURL() string {
 	r, _ := regexp.Compile("https?://[^/]+")
 	host := r.FindString(source.URI)
-	return host + "/api/v3"
+	return host + "/api/v4"
 }
 
 // GetProjectPath extracts project path from URI (repository URL).
