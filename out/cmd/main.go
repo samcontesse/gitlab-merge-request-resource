@@ -42,7 +42,7 @@ func main() {
 
 	state := gitlab.BuildState(gitlab.BuildStateValue(request.Params.Status))
 	target := resource.GetTargetURL()
-	name := resource.GetServerName()
+	name := resource.GetPipelineName()
 
 	options := gitlab.SetCommitStatusOptions{
 		Name:      &name,

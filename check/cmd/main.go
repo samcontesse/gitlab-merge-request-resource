@@ -63,7 +63,7 @@ func main() {
 		}
 
 		target := resource.GetTargetURL()
-		name := resource.GetServerName()
+		name := resource.GetPipelineName()
 
 		options := gitlab.SetCommitStatusOptions{
 			Name:      &name,

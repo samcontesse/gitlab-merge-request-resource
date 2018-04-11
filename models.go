@@ -67,7 +67,6 @@ func GetTargetURL() string {
 	return target.String()
 }
 
-func GetServerName() string {
-	r, _ := regexp.Compile("https?://([^/])+")
-	return r.FindStringSubmatch(os.Getenv("ATC_EXTERNAL_URL"))[1]
+func GetPipelineName() string {
+	return os.Getenv("BUILD_PIPELINE_NAME")
 }
