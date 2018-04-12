@@ -29,15 +29,6 @@ type MetadataField struct {
 	Value string `json:"value"`
 }
 
-type BuildMetadata struct {
-	BuildId           string `json:"build_id"`
-	BuildName         string `json:"build_name"`
-	BuildTeamName     string `json:"build_team_name"`
-	BuildJobName      string `json:"build_job_name"`
-	BuildPipelineName string `json:"build_pipeline_name"`
-	AtcExternalURL    string `json:"atc_external_url"`
-}
-
 // GetBaseURL extracts host from URI (repository URL) and appends the v3 API suffix.
 func (source *Source) GetBaseURL() string {
 	r, _ := regexp.Compile("https?://[^/]+")
