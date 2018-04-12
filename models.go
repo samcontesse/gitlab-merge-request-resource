@@ -13,11 +13,12 @@ type Source struct {
 	SkipWorkInProgress bool     `json:"skip_work_in_progress,omitempty"`
 	SkipNotMergeable   bool     `json:"skip_not_mergeable,omitempty"`
 	SkipTriggerComment bool     `json:"skip_trigger_comment,omitempty"`
+	ConcourseUrl       string   `json:"concourse_url,omitempty"`
 	Labels             []string `json:"labels,omitempty"`
 }
 
 type Version struct {
-	ID        int       `json:"id,string"`
+	ID        int        `json:"id,string"`
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
@@ -58,13 +59,21 @@ func (source *Source) GetCloneURL() string {
 	return prefix + "gitlab-ci-token:" + source.PrivateToken + "@" + suffix;
 }
 
-func GetTargetURL() string {
-	target, _ := url.Parse(os.Getenv("ATC_EXTERNAL_URL"))
+func (source *Source) GetTargetURL() string {
+	target, _ := url.Parse(source.GetCoucourseUrl())
 	target.Path += "/teams/" + url.QueryEscape(os.Getenv("BUILD_TEAM_NAME"))
 	target.Path += "/pipelines/" + url.QueryEscape(os.Getenv("BUILD_PIPELINE_NAME"))
 	target.Path += "/jobs/" + url.QueryEscape(os.Getenv("BUILD_JOB_NAME"))
 	target.Path += "/builds/" + url.QueryEscape(os.Getenv("BUILD_NAME"))
 	return target.String()
+}
+
+func (source *Source) GetCoucourseUrl() string {
+	if source.ConcourseUrl != "" {
+		return source.ConcourseUrl
+	} else {
+		return os.Getenv("ATC_EXTERNAL_URL")
+	}
 }
 
 func GetPipelineName() string {

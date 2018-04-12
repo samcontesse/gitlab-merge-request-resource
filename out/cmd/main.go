@@ -41,7 +41,7 @@ func main() {
 	api.SetBaseURL(request.Source.GetBaseURL())
 
 	state := gitlab.BuildState(gitlab.BuildStateValue(request.Params.Status))
-	target := resource.GetTargetURL()
+	target := request.Source.GetTargetURL()
 	name := resource.GetPipelineName()
 
 	options := gitlab.SetCommitStatusOptions{
