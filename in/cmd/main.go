@@ -39,7 +39,7 @@ func main() {
 	}
 
 	cmd := "git"
-	args := []string{"clone", "-b", mr.SourceBranch, "--single-branch", request.Source.GetCloneURL(), destination}
+	args := []string{"clone", "-b", mr.TargetBranch, request.Source.GetCloneURL(), destination}
 	command := exec.Command(cmd, args...)
 	command.Stdin = os.Stdin
 	command.Stderr = os.Stderr
@@ -49,9 +49,9 @@ func main() {
 
 	os.Chdir(destination)
 
-	args = []string{"reset", "--hard", mr.SHA}
+	args = []string{"merge", "--no-ff", "--no-commit", mr.SHA}
 	if err := exec.Command(cmd, args...).Run(); err != nil {
-		common.Fatal("resetting HEAD to "+mr.SHA, err)
+		common.Fatal("merging "+mr.SHA+" into "+mr.TargetBranch, err)
 	}
 
 	addCommitNotes(mr, "mr")
