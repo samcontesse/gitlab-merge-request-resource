@@ -9,6 +9,7 @@ import (
 	"github.com/samcontesse/gitlab-merge-request-resource/common"
 	"github.com/samcontesse/gitlab-merge-request-resource/in"
 	"github.com/xanzy/go-gitlab"
+	"io/ioutil"
 )
 
 func main() {
@@ -54,7 +55,9 @@ func main() {
 		common.Fatal("merging "+mr.SHA+" into "+mr.TargetBranch, err)
 	}
 
-	addCommitNotes(mr, "mr")
+	notes, _ := json.Marshal(mr)
+	err = ioutil.WriteFile(".git/merge-request.json", notes, 0644)
+
 	response := in.Response{Version: request.Version, Metadata: buildMetadata(mr, commit)}
 
 	json.NewEncoder(os.Stdout).Encode(response)
@@ -98,18 +101,5 @@ func buildMetadata(mr *gitlab.MergeRequest, commit *gitlab.Commit) resource.Meta
 			Name:  "url",
 			Value: mr.WebURL,
 		},
-	}
-}
-
-func addCommitNotes(object interface{}, ref string) {
-	notes, err := json.Marshal(object)
-	if err != nil {
-		common.Fatal("marshalling "+ref+" notes", err)
-	}
-
-	cmd := "git"
-	args := []string{"notes", "--ref=" + ref, "add", "-f", "-m", string(notes)}
-	if err := exec.Command(cmd, args...).Run(); err != nil {
-		common.Fatal("adding notes `"+ref+"` to commit", err)
 	}
 }

@@ -1,16 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
-	"os/exec"
-	"strings"
 	"github.com/samcontesse/gitlab-merge-request-resource"
 	"github.com/samcontesse/gitlab-merge-request-resource/common"
 	"github.com/samcontesse/gitlab-merge-request-resource/out"
 	"github.com/xanzy/go-gitlab"
 	"path"
+	"io/ioutil"
 )
 
 func main() {
@@ -32,10 +30,13 @@ func main() {
 		common.Fatal("changing directory to "+path, err)
 	}
 
-	revision := readRevision()
+	raw, err := ioutil.ReadFile(".git/merge-request.json")
+	if err != nil {
+		common.Fatal("unmarshalling merge request information", err)
+	}
 
 	var mr gitlab.MergeRequest
-	unmarshallNotes("mr", revision, &mr)
+	json.Unmarshal(raw, &mr)
 
 	api := gitlab.NewClient(nil, request.Source.PrivateToken)
 	api.SetBaseURL(request.Source.GetBaseURL())
@@ -50,7 +51,7 @@ func main() {
 		State:     *state,
 	}
 
-	api.Commits.SetCommitStatus(mr.ProjectID, revision, &options)
+	api.Commits.SetCommitStatus(mr.ProjectID, mr.SHA, &options)
 
 	response := out.Response{Version: resource.Version{
 		ID:        mr.IID,
@@ -58,29 +59,5 @@ func main() {
 	}}
 
 	json.NewEncoder(os.Stdout).Encode(response)
-
-}
-
-func readRevision() string {
-	var outbuf bytes.Buffer
-	command := exec.Command("git", "rev-parse", "HEAD")
-	command.Stdout = &outbuf
-	if err := command.Run(); err != nil {
-		common.Fatal("reading HEAD revision", err)
-	}
-	return strings.TrimSpace(outbuf.String())
-}
-
-func unmarshallNotes(ref string, revision string, v interface{}) {
-	var outbuf bytes.Buffer
-	command := exec.Command("git", "notes", "--ref="+ref, "show", revision)
-	command.Stdout = &outbuf
-	if err := command.Run(); err != nil {
-		common.Fatal("reading build notes", err)
-	}
-	err := json.Unmarshal(outbuf.Bytes(), &v)
-	if err != nil {
-		common.Fatal("unmarshalling "+ref+" from "+revision+" notes", err)
-	}
 
 }
