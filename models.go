@@ -38,8 +38,8 @@ func (source *Source) GetBaseURL() string {
 
 // GetProjectPath extracts project path from URI (repository URL).
 func (source *Source) GetProjectPath() string {
-	r, _ := regexp.Compile("([^/]+/[^/]+)\\.git/?$")
-	return r.FindStringSubmatch(source.URI)[1]
+	r, _ := regexp.Compile("(https?|ssh)://([^/]*)/(.*)\\.git$")
+	return r.FindStringSubmatch(source.URI)[3]
 }
 
 // GetCloneURL add the private token in the URI
