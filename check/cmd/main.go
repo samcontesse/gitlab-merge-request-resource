@@ -19,7 +19,7 @@ func main() {
 		common.Fatal("reading request from stdin", err)
 	}
 
-	api := gitlab.NewClient(nil, request.Source.PrivateToken)
+	api := gitlab.NewClient(common.GetDefaultClient(request.Source.Insecure), request.Source.PrivateToken)
 	api.SetBaseURL(request.Source.GetBaseURL())
 
 	options := &gitlab.ListProjectMergeRequestsOptions{State: gitlab.String("opened"), OrderBy: gitlab.String("updated_at"), Labels: request.Source.Labels}

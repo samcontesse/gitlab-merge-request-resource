@@ -21,6 +21,7 @@ resources:
 
 * `uri`: (required) The location of the repository (required)
 * `private_token`: (required) Your GitLab user's private token (required, can be found in your profile settings)
+* `insecure`: When set to `true`, SSL verification is turned off 
 * `skip_work_in_progress`: When set to `true`, merge requests mark as work in progress (WIP) will be skipped. Default `false`
 * `skip_not_mergeable`: When set to `true`, merge requests not marked as mergeable will be skipped. Default `false`
 * `skip_trigger_comment`: When set to `true`, the resource will not look up for `[trigger mr]` merge request comments to manually trigger builds. Default `false`  

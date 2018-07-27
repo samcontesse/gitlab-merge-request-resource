@@ -3,6 +3,8 @@ package common
 import (
 	"os"
 	"fmt"
+	"net/http"
+	"crypto/tls"
 )
 
 func Fatal(doing string, err error) {
@@ -12,4 +14,9 @@ func Fatal(doing string, err error) {
 
 func Sayf(message string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, message, args...)
+}
+
+func GetDefaultClient(insecure bool) *http.Client {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
+	return http.DefaultClient
 }
