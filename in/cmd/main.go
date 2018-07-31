@@ -27,20 +27,25 @@ func main() {
 		common.Fatal("reading request from stdin", err)
 	}
 
-	api := gitlab.NewClient(nil, request.Source.PrivateToken)
+	api := gitlab.NewClient(common.GetDefaultClient(request.Source.Insecure), request.Source.PrivateToken)
 	api.SetBaseURL(request.Source.GetBaseURL())
 
 	mr, _, err := api.MergeRequests.GetMergeRequest(request.Source.GetProjectPath(), request.Version.ID)
-	mr.UpdatedAt = request.Version.UpdatedAt
-
-	commit, _, err := api.Commits.GetCommit(mr.ProjectID, mr.SHA)
 
 	if err != nil {
 		common.Fatal("getting merge request", err)
 	}
 
+	mr.UpdatedAt = request.Version.UpdatedAt
+
+	commit, _, err := api.Commits.GetCommit(mr.ProjectID, mr.SHA)
+
+	if err != nil {
+		common.Fatal("listing merge request commits", err)
+	}
+
 	cmd := "git"
-	args := []string{"clone", "-b", mr.TargetBranch, request.Source.GetCloneURL(), destination}
+	args := []string{"clone", "-c", "http.sslVerify=" + strconv.FormatBool(!request.Source.Insecure), "-b", mr.TargetBranch, request.Source.GetCloneURL(), destination}
 	command := exec.Command(cmd, args...)
 	command.Stdin = os.Stdin
 	command.Stderr = os.Stderr

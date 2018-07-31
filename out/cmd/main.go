@@ -38,7 +38,7 @@ func main() {
 	var mr gitlab.MergeRequest
 	json.Unmarshal(raw, &mr)
 
-	api := gitlab.NewClient(nil, request.Source.PrivateToken)
+	api := gitlab.NewClient(common.GetDefaultClient(request.Source.Insecure), request.Source.PrivateToken)
 	api.SetBaseURL(request.Source.GetBaseURL())
 
 	state := gitlab.BuildState(gitlab.BuildStateValue(request.Params.Status))
