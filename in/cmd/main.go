@@ -36,11 +36,14 @@ func main() {
 		common.Fatal("getting merge request", err)
 	}
 
+	common.UpdateCommitStatus(mr, request.Source, gitlab.Pending)
+
 	mr.UpdatedAt = request.Version.UpdatedAt
 
 	commit, _, err := api.Commits.GetCommit(mr.ProjectID, mr.SHA)
 
 	if err != nil {
+		common.UpdateCommitStatus(mr, request.Source, gitlab.Failed)
 		common.Fatal("listing merge request commits", err)
 	}
 
@@ -50,6 +53,7 @@ func main() {
 	command.Stdin = os.Stdin
 	command.Stderr = os.Stderr
 	if err := command.Run(); err != nil {
+		common.UpdateCommitStatus(mr, request.Source, gitlab.Failed)
 		common.Fatal("cloning repository", err)
 	}
 
@@ -57,6 +61,7 @@ func main() {
 
 	args = []string{"merge", "--no-ff", "--no-commit", mr.SHA}
 	if err := exec.Command(cmd, args...).Run(); err != nil {
+		common.UpdateCommitStatus(mr, request.Source, gitlab.Failed)
 		common.Fatal("merging "+mr.SHA+" into "+mr.TargetBranch, err)
 	}
 
