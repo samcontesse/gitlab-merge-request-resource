@@ -46,7 +46,7 @@ func main() {
 		}
 
 		if !request.Source.SkipTriggerComment {
-			notes, _, _ := api.Notes.ListMergeRequestNotes(mr.ProjectID, mr.ID, &gitlab.ListMergeRequestNotesOptions{})
+			notes, _, _ := api.Notes.ListMergeRequestNotes(mr.ProjectID, mr.IID, &gitlab.ListMergeRequestNotesOptions{})
 			updatedAt = getMostRecentUpdateTime(notes, updatedAt)
 		}
 
