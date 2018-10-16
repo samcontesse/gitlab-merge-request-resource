@@ -38,20 +38,8 @@ func main() {
 	var mr gitlab.MergeRequest
 	json.Unmarshal(raw, &mr)
 
-	api := gitlab.NewClient(common.GetDefaultClient(request.Source.Insecure), request.Source.PrivateToken)
-	api.SetBaseURL(request.Source.GetBaseURL())
-
 	state := gitlab.BuildState(gitlab.BuildStateValue(request.Params.Status))
-	target := request.Source.GetTargetURL()
-	name := resource.GetPipelineName()
-
-	options := gitlab.SetCommitStatusOptions{
-		Name:      &name,
-		TargetURL: &target,
-		State:     *state,
-	}
-
-	api.Commits.SetCommitStatus(mr.ProjectID, mr.SHA, &options)
+	common.UpdateCommitStatus(&mr, request.Source, *state)
 
 	response := out.Response{Version: resource.Version{
 		ID:        mr.IID,
