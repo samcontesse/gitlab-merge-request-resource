@@ -5,12 +5,12 @@ import (
 )
 
 type Request struct {
-	Source resource.Source  `json:"source"`
-	Params Params `json:"params"`
+	Source resource.Source `json:"source"`
+	Params Params          `json:"params"`
 }
 
 type Response struct {
-	Version resource.Version  `json:"version"`
+	Version resource.Version `json:"version"`
 }
 
 type Params struct {
