@@ -27,36 +27,24 @@ var (
 
 var _ = Describe("Out", func() {
 	var (
-		srcDir    string
-		req       out.Request
-		res       out.Response
-		gitlabURL string
+		srcDir         string
+		req            out.Request
+		res            out.Response
+		localGitlabURL string
 	)
 
 	BeforeEach(func() {
 		var err error
 		srcDir, err = ioutil.TempDir("", "gitlab-merge-request-resource-dir")
 		Expect(err).ToNot(HaveOccurred())
-		gitlabURL = setup()
-		mux.HandleFunc("/api/v4/projects/1/statuses/abc", func(w http.ResponseWriter, r *http.Request) {
-			var commitStatus gitlab.CommitStatus = gitlab.CommitStatus{
-				ID:          1,
-				SHA:         "12311",
-				Ref:         "",
-				Status:      "",
-				Name:        "",
-				TargetURL:   "",
-				Description: "",
-			}
+		_ = os.Mkdir(path.Join(srcDir, "repo"), 0744)
+		_ = os.Mkdir(path.Join(srcDir, "repo", ".git"), 0744)
+		_ = ioutil.WriteFile(
+			path.Join(srcDir, "repo", ".git", "merge-request.json"),
+			[]byte(Fixture("merge-request.json")),
+			0744)
 
-			output, err := json.Marshal(commitStatus)
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-			w.Header().Set("content-type", "application/json")
-			w.Write(output)
-		})
+		localGitlabURL = setupLocalGitlab("/api/v4")
 	})
 
 	AfterEach(func() {
@@ -65,13 +53,11 @@ var _ = Describe("Out", func() {
 	})
 
 	JustBeforeEach(func() {
-
 		cmd := exec.Command(bins.Out, srcDir)
 		payload, err := json.Marshal(req)
 		Expect(err).ToNot(HaveOccurred())
 
 		outBuf := new(bytes.Buffer)
-
 		cmd.Stdin = bytes.NewBuffer(payload)
 		cmd.Stdout = outBuf
 		cmd.Stderr = GinkgoWriter
@@ -83,23 +69,12 @@ var _ = Describe("Out", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	Describe("image metadata", func() {
+	Describe("Only update Status", func() {
 
 		BeforeEach(func() {
-			_ = os.Mkdir(
-				path.Join(srcDir, "repo"),
-				0744)
-			_ = os.Mkdir(
-				path.Join(srcDir, "repo", ".git"),
-				0744)
-			_ = ioutil.WriteFile(
-				path.Join(srcDir, "repo", ".git", "merge-request.json"),
-				[]byte(Fixture("merge-request.json")),
-				0744)
-
 			req = out.Request{
 				Source: resource.Source{
-					URI:          gitlabURL,
+					URI:          localGitlabURL,
 					PrivateToken: "$$random",
 					Insecure:     false,
 				},
@@ -108,17 +83,111 @@ var _ = Describe("Out", func() {
 					Status:     "running",
 				},
 			}
+
+			// mock gitlab request for commit status base on fixtures/merge-request.json
+			mux.HandleFunc("/api/v4/projects/1/statuses/abc", func(w http.ResponseWriter, r *http.Request) {
+				commitStatus := gitlab.CommitStatus{ID: 1, SHA: "abc"}
+				output, _ := json.Marshal(commitStatus)
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusCreated)
+				w.Write(output)
+			})
 		})
 
-		It("works", func() {
-			Expect(res.Version.ID).To(Equal(1))
+		It("check Version.ID", func() {
+			// res.Version.ID should be equal with IID in merge-request.json
+			Expect(res.Version.ID).To(Equal(12))
+		})
+
+	})
+
+	Describe("Only update Labels", func() {
+
+		BeforeEach(func() {
+			req = out.Request{
+				Source: resource.Source{
+					URI:          localGitlabURL,
+					PrivateToken: "$$random",
+					Insecure:     false,
+				},
+				Params: out.Params{
+					Repository: "repo",
+					Labels:     []string{"in-stage", "ut-pass"},
+				},
+			}
+
+			// mock gitlab request for update merge request base on fixtures/merge-request.json
+			mux.HandleFunc("/api/v4/projects/1/merge_requests/12", func(w http.ResponseWriter, r *http.Request) {
+				updatedMR := gitlab.MergeRequest{
+					ID:           1,
+					IID:          2,
+					TargetBranch: "master",
+					SourceBranch: "dev",
+				}
+				output, _ := json.Marshal(updatedMR)
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				w.Write(output)
+			})
+		})
+
+		It("check Version.ID", func() {
+			// res.Version.ID should be equal with IID in merge-request.json
+			Expect(res.Version.ID).To(Equal(12))
+		})
+
+	})
+
+	Describe("Only both Status and Labels", func() {
+
+		BeforeEach(func() {
+			req = out.Request{
+				Source: resource.Source{
+					URI:          localGitlabURL,
+					PrivateToken: "$$random",
+					Insecure:     false,
+				},
+				Params: out.Params{
+					Repository: "repo",
+					Status:     "running",
+					Labels:     []string{"in-stage", "ut-pass"},
+				},
+			}
+
+			// mock gitlab request for commit status base on fixtures/merge-request.json
+			mux.HandleFunc("/api/v4/projects/1/statuses/abc", func(w http.ResponseWriter, r *http.Request) {
+				commitStatus := gitlab.CommitStatus{ID: 1, SHA: "abc"}
+				output, _ := json.Marshal(commitStatus)
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusCreated)
+				w.Write(output)
+			})
+
+			// mock gitlab request for update merge request base on fixtures/merge-request.json
+			mux.HandleFunc("/api/v4/projects/1/merge_requests/12", func(w http.ResponseWriter, r *http.Request) {
+				updatedMR := gitlab.MergeRequest{
+					ID:           1,
+					IID:          2,
+					TargetBranch: "master",
+					SourceBranch: "dev",
+				}
+				output, _ := json.Marshal(updatedMR)
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				w.Write(output)
+			})
+		})
+
+		It("check Version.ID", func() {
+			// res.Version.ID should be equal with IID in merge-request.json
+			Expect(res.Version.ID).To(Equal(12))
 		})
 
 	})
 
 })
 
-func setup() string {
+func setupLocalGitlab(versionPrefix string) string {
 	os.Setenv("GITLAB_TOKEN", "$$$randome")
 
 	// test server
@@ -126,7 +195,7 @@ func setup() string {
 	server = httptest.NewServer(mux)
 	base, _ := url.Parse(server.URL)
 
-	u, err := url.Parse("/api/v4")
+	u, err := url.Parse(versionPrefix)
 	if err != nil {
 		log.Fatal(err)
 	}

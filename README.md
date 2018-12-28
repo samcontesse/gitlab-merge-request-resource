@@ -46,6 +46,7 @@ Updates the merge request's `merge_status` which displays nicely in the GitLab U
 
 * `repository`: The path of the repository of the merge request's source branch (required)
 * `status`: The new status of the merge request (required, can be either `pending`, `running`, `success`, `failed`, or `canceled`)
+* `labels`(string[]): The labels you want set to your merge request
 
 ## Example
 
@@ -71,4 +72,5 @@ jobs:
     params:
       repository: merge-request
       status: success
+      labels: ['unit-test', 'stage']
 ```

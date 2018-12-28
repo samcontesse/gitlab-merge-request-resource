@@ -14,6 +14,7 @@ type Response struct {
 }
 
 type Params struct {
-	Repository string `json:"repository"`
-	Status     string `json:"status"`
+	Repository string   `json:"repository"`
+	Status     string   `json:"status"`
+	Labels     []string `json:"labels"`
 }
