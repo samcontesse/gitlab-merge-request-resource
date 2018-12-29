@@ -138,7 +138,7 @@ var _ = Describe("Out", func() {
 
 	})
 
-	Describe("Only both Status and Labels", func() {
+	Describe("Both Status and Labels", func() {
 
 		BeforeEach(func() {
 			req = out.Request{
@@ -174,6 +174,42 @@ var _ = Describe("Out", func() {
 				output, _ := json.Marshal(updatedMR)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
+				w.Write(output)
+			})
+		})
+
+		It("check Version.ID", func() {
+			// res.Version.ID should be equal with IID in merge-request.json
+			Expect(res.Version.ID).To(Equal(12))
+		})
+
+	})
+
+	Describe("Only add comment", func() {
+
+		BeforeEach(func() {
+			req = out.Request{
+				Source: resource.Source{
+					URI:          localGitlabURL,
+					PrivateToken: "$$random",
+					Insecure:     false,
+				},
+				Params: out.Params{
+					Repository: "repo",
+					Comment:    out.Comment{FilePath: "comment.txt", Text: "new comment, $FILE_CONTENT"},
+				},
+			}
+			_ = ioutil.WriteFile(
+				path.Join(srcDir, "comment.txt"),
+				[]byte(Fixture("comment.txt")),
+				0744)
+
+			// mock gitlab request for new MR comment
+			mux.HandleFunc("/api/v4/projects/1/merge_requests/12/notes", func(w http.ResponseWriter, r *http.Request) {
+				mergeRequestNote := gitlab.Note{ID: 1, Body: "abc"}
+				output, _ := json.Marshal(mergeRequestNote)
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusCreated)
 				w.Write(output)
 			})
 		})

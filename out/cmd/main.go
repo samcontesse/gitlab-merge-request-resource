@@ -25,9 +25,9 @@ func main() {
 		common.Fatal("reading request from stdin", err)
 	}
 
-	path := path.Join(os.Args[1], request.Params.Repository)
-	if err := os.Chdir(path); err != nil {
-		common.Fatal("changing directory to "+path, err)
+	workDirPath := path.Join(os.Args[1], request.Params.Repository)
+	if err := os.Chdir(workDirPath); err != nil {
+		common.Fatal("changing directory to "+workDirPath, err)
 	}
 
 	raw, err := ioutil.ReadFile(".git/merge-request.json")
@@ -72,6 +72,21 @@ func main() {
 		}
 		if err != nil {
 			common.Fatal("Update merge request failed", err)
+		}
+	}
+
+	commentBody := request.Params.Comment.GetContent(os.Args[1])
+	if commentBody != "" {
+		options := gitlab.CreateMergeRequestNoteOptions{
+			Body: &commentBody,
+		}
+		_, res, err := api.Notes.CreateMergeRequestNote(mr.ProjectID, mr.IID, &options)
+		if res.StatusCode != 201 {
+			body, _ := ioutil.ReadAll(res.Body)
+			log.Fatalf("status code unexpected: %d, response %s", res.StatusCode, string(body))
+		}
+		if err != nil {
+			common.Fatal("Add merge request comment failed", err)
 		}
 	}
 

@@ -73,4 +73,9 @@ jobs:
       repository: merge-request
       status: success
       labels: ['unit-test', 'stage']
+      comment:
+        file: out/commt.txt
+        text: |
+          Add new comment.
+          $FILE_CONTENT
 ```
