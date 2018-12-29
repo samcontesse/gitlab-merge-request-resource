@@ -14,7 +14,8 @@ type Request struct {
 }
 
 type Response struct {
-	Version resource.Version `json:"version"`
+	Version  resource.Version  `json:"version"`
+	Metadata resource.Metadata `json:"metadata"`
 }
 
 type Params struct {
