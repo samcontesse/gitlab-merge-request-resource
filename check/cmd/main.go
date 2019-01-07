@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"os"
-	"github.com/xanzy/go-gitlab"
 	"github.com/samcontesse/gitlab-merge-request-resource"
 	"github.com/samcontesse/gitlab-merge-request-resource/check"
 	"github.com/samcontesse/gitlab-merge-request-resource/common"
+	"github.com/xanzy/go-gitlab"
+	"os"
 	"strings"
 	"time"
 )
@@ -22,7 +22,10 @@ func main() {
 	api := gitlab.NewClient(common.GetDefaultClient(request.Source.Insecure), request.Source.PrivateToken)
 	api.SetBaseURL(request.Source.GetBaseURL())
 
-	options := &gitlab.ListProjectMergeRequestsOptions{State: gitlab.String("opened"), OrderBy: gitlab.String("updated_at"), Labels: request.Source.Labels}
+	options := &gitlab.ListProjectMergeRequestsOptions{
+		State:   gitlab.String("opened"),
+		OrderBy: gitlab.String("updated_at"),
+		Labels:  request.Source.Labels}
 	requests, _, err := api.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)
 
 	if err != nil {
