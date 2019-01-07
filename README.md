@@ -46,7 +46,7 @@ Updates the merge request's `merge_status` which displays nicely in the GitLab U
 
 * `repository`: The path of the repository of the merge request's source branch (required)
 * `status`: The new status of the merge request (required, can be either `pending`, `running`, `success`, `failed`, or `canceled`)
-* `labels`(string[]): The labels you want set to your merge request
+* `labels`(string[]): The labels you want add to your merge request
 * `comment`: Add a comment for MR. Could be an object with `text`/`file` fields. If just the `file` or `text` is specified it is used to populate the field, if both `file` and `text` are specified then the file is substituted in to replace $FILE_CONTENT in the text.
 
 ## Example

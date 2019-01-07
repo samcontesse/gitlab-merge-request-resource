@@ -67,8 +67,15 @@ func main() {
 
 	if request.Params.Labels != nil {
 		message = message + fmt.Sprintf("Set Labels: %s \n", request.Params.Labels)
+		// Make sure `Labels` is present in that merge request
+		currentLabels := mr.Labels
+		for _, newLabel := range request.Params.Labels {
+			if !Contains(currentLabels, newLabel) {
+				currentLabels = append(currentLabels, newLabel)
+			}
+		}
 		options := gitlab.UpdateMergeRequestOptions{
-			Labels: request.Params.Labels,
+			Labels: currentLabels,
 		}
 		_, res, err := api.MergeRequests.UpdateMergeRequest(mr.ProjectID, mr.IID, &options)
 		if res.StatusCode != 200 {
@@ -147,4 +154,13 @@ func buildMetadata(mr *gitlab.MergeRequest, message string) resource.Metadata {
 			Value: mr.WebURL,
 		},
 	}
+}
+
+func Contains(sl []string, v string) bool {
+	for _, vv := range sl {
+		if vv == v {
+			return true
+		}
+	}
+	return false
 }
