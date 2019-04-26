@@ -43,14 +43,6 @@ func (source *Source) GetProjectPath() string {
 	return r.FindStringSubmatch(source.URI)[3]
 }
 
-// GetCloneURL add the private token in the URI
-func (source *Source) GetCloneURL() string {
-	r, _ := regexp.Compile("(https?://)(.*)")
-	prefix := r.FindStringSubmatch(source.URI)[1]
-	suffix := r.FindStringSubmatch(source.URI)[2]
-	return prefix + "gitlab-ci-token:" + source.PrivateToken + "@" + suffix;
-}
-
 func (source *Source) GetTargetURL() string {
 	target, _ := url.Parse(source.GetCoucourseUrl())
 	target.Path += "/teams/" + url.QueryEscape(os.Getenv("BUILD_TEAM_NAME"))
