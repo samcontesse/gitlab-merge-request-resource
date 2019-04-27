@@ -74,7 +74,7 @@ func main() {
 			State:     gitlab.Pending,
 		}
 
-		api.Commits.SetCommitStatus(mr.ProjectID, mr.SHA, &options)
+		api.Commits.SetCommitStatus(mr.SourceProjectID, mr.SHA, &options)
 
 		versions = append(versions, resource.Version{ID: mr.IID, UpdatedAt: updatedAt})
 

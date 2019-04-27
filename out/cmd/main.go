@@ -55,7 +55,7 @@ func main() {
 			State:     *state,
 		}
 
-		_, res, err := api.Commits.SetCommitStatus(mr.ProjectID, mr.SHA, &options)
+		_, res, err := api.Commits.SetCommitStatus(mr.SourceProjectID, mr.SHA, &options)
 		if res.StatusCode != 201 {
 			body, _ := ioutil.ReadAll(res.Body)
 			log.Fatalf("Set commit status failed: %d, response %s", res.StatusCode, string(body))
