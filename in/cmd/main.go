@@ -2,14 +2,16 @@ package main
 
 import (
 	"encoding/json"
-	"os"
-	"os/exec"
-	"strconv"
 	"github.com/samcontesse/gitlab-merge-request-resource"
 	"github.com/samcontesse/gitlab-merge-request-resource/common"
 	"github.com/samcontesse/gitlab-merge-request-resource/in"
 	"github.com/xanzy/go-gitlab"
 	"io/ioutil"
+	"net/url"
+	"os"
+	"os/exec"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -38,27 +40,19 @@ func main() {
 
 	mr.UpdatedAt = request.Version.UpdatedAt
 
-	commit, _, err := api.Commits.GetCommit(mr.ProjectID, mr.SHA)
+	target := createRepositoryUrl(api, mr.TargetProjectID, request.Source.PrivateToken)
+	source := createRepositoryUrl(api, mr.SourceProjectID, request.Source.PrivateToken)
 
+	commit, _, err := api.Commits.GetCommit(mr.SourceProjectID, mr.SHA)
 	if err != nil {
 		common.Fatal("listing merge request commits", err)
 	}
 
-	cmd := "git"
-	args := []string{"clone", "-c", "http.sslVerify=" + strconv.FormatBool(!request.Source.Insecure), "-b", mr.TargetBranch, request.Source.GetCloneURL(), destination}
-	command := exec.Command(cmd, args...)
-	command.Stdin = os.Stdin
-	command.Stderr = os.Stderr
-	if err := command.Run(); err != nil {
-		common.Fatal("cloning repository", err)
-	}
-
+	execGitCommand([]string{"clone", "-c", "http.sslVerify=" + strconv.FormatBool(!request.Source.Insecure), "-o", "target", "-b", mr.TargetBranch, target.String(), destination})
 	os.Chdir(destination)
-
-	args = []string{"merge", "--no-ff", "--no-commit", mr.SHA}
-	if err := exec.Command(cmd, args...).Run(); err != nil {
-		common.Fatal("merging "+mr.SHA+" into "+mr.TargetBranch, err)
-	}
+	execGitCommand([]string{"remote", "add", "source", source.String()})
+	execGitCommand([]string{"remote", "update"})
+	execGitCommand([]string{"merge", "--no-ff", "--no-commit", mr.SHA})
 
 	notes, _ := json.Marshal(mr)
 	err = ioutil.WriteFile(".git/merge-request.json", notes, 0644)
@@ -66,6 +60,31 @@ func main() {
 	response := in.Response{Version: request.Version, Metadata: buildMetadata(mr, commit)}
 
 	json.NewEncoder(os.Stdout).Encode(response)
+}
+
+func execGitCommand(args []string) {
+	cmd := "git"
+	command := exec.Command(cmd, args...)
+	command.Stdin = os.Stdin
+	command.Stderr = os.Stderr
+	err := command.Run()
+	if err != nil {
+		common.Fatal("executing git "+strings.Join(args, " "), err)
+	}
+}
+
+func createRepositoryUrl(api *gitlab.Client, pid int, token string) *url.URL {
+	project, _, err := api.Projects.GetProject(pid)
+	if err != nil {
+		common.Fatal("reading project from api", err)
+	}
+
+	u, err := url.Parse(project.HTTPURLToRepo)
+	if err != nil {
+		common.Fatal("parsing repository url", err)
+	}
+	u.User = url.UserPassword("gitlab-ci-token", token)
+	return u
 }
 
 func buildMetadata(mr *gitlab.MergeRequest, commit *gitlab.Commit) resource.Metadata {
