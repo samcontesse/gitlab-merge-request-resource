@@ -48,16 +48,17 @@ func main() {
 			continue
 		}
 
-		if !request.Source.SkipTriggerComment {
-			notes, _, _ := api.Notes.ListMergeRequestNotes(mr.ProjectID, mr.IID, &gitlab.ListMergeRequestNotesOptions{})
-			updatedAt = getMostRecentUpdateTime(notes, updatedAt)
-		}
-
 		if request.Source.SkipNotMergeable && mr.MergeStatus != "can_be_merged" {
 			continue
 		}
 
-		if request.Source.SkipWorkInProgress && mr.WorkInProgress {
+		if !request.Source.SkipTriggerComment {
+			notes, _, _ := api.Notes.ListMergeRequestNotes(mr.ProjectID, mr.IID, &gitlab.ListMergeRequestNotesOptions{})
+			updatedAt = getMostRecentUpdateTime(request.Source.OnlyTriggerComment, notes, updatedAt)
+		}
+
+		if len(strings.TrimSpace(request.Source.OnlyTriggerComment)) == 0 &&
+				request.Source.SkipWorkInProgress && mr.WorkInProgress {
 			continue
 		}
 
@@ -84,9 +85,9 @@ func main() {
 
 }
 
-func getMostRecentUpdateTime(notes []*gitlab.Note, updatedAt *time.Time) *time.Time {
+func getMostRecentUpdateTime(triggerComment string, notes []*gitlab.Note, updatedAt *time.Time) *time.Time {
 	for _, note := range notes {
-		if strings.Contains(note.Body, "[trigger ci]") && updatedAt.Before(*note.UpdatedAt) {
+		if strings.Contains(note.Body, triggerComment) && updatedAt.Before(*note.UpdatedAt) {
 			return note.UpdatedAt
 		}
 	}

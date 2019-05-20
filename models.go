@@ -14,6 +14,7 @@ type Source struct {
 	SkipWorkInProgress bool     `json:"skip_work_in_progress,omitempty"`
 	SkipNotMergeable   bool     `json:"skip_not_mergeable,omitempty"`
 	SkipTriggerComment bool     `json:"skip_trigger_comment,omitempty"`
+	OnlyTriggerComment string   `json:"only_trigger_comment,omitempty"`
 	ConcourseUrl       string   `json:"concourse_url,omitempty"`
 	Labels             []string `json:"labels,omitempty"`
 }
