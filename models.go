@@ -39,6 +39,13 @@ func (source *Source) GetBaseURL() string {
 	return host + "/api/v4"
 }
 
+// GetGitlabHostName extracts host from URI (repository URL).
+func (source *Source) GetGitlabHost() string {
+	r, _ := regexp.Compile("gitlab[^/]+")
+	host := r.FindString(source.URI)
+	return host
+}
+
 // GetProjectPath extracts project path from URI (repository URL).
 func (source *Source) GetProjectPath() string {
 	r, _ := regexp.Compile("(https?|ssh)://([^/]*)/(.*)\\.git$")
