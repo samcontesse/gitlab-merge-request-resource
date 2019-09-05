@@ -27,6 +27,7 @@ resources:
 * `skip_trigger_comment`: When set to `true`, the resource will not look up for `[trigger ci]` merge request comments to manually trigger builds. Default `false`  
 * `concourse_url`: When set, this url will be used to override `ATC_EXTERNAL_URL` during commit status updates. No set default.  
 * `labels`(string[]): Filter merge requests by label`[]`
+* `target_branch`(string): Filter merge requests by target_branch. Default is empty string.
 
 ## Behavior
 
