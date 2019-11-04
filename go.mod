@@ -8,3 +8,5 @@ require (
 	github.com/xanzy/go-gitlab v0.8.1
 	golang.org/x/sys v0.0.0-20181221143128-b4a75ba826a6 // indirect
 )
+
+go 1.13

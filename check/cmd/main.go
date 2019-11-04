@@ -26,7 +26,6 @@ func main() {
 		State:   gitlab.String("opened"),
 		OrderBy: gitlab.String("updated_at"),
 		Labels:  request.Source.Labels,
-		TargetBranch: gitlab.String(request.Source.TargetBranch)
 	}
 	requests, _, err := api.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)
 
@@ -81,8 +80,7 @@ func main() {
 		versions = append(versions, resource.Version{ID: mr.IID, UpdatedAt: updatedAt})
 
 	}
-
-	json.NewEncoder(os.Stdout).Encode(versions)
+	json.NewEncoder(os.Stdout).Encode(reverseOrderVersions(versions))
 
 }
 
@@ -93,4 +91,14 @@ func getMostRecentUpdateTime(notes []*gitlab.Note, updatedAt *time.Time) *time.T
 		}
 	}
 	return updatedAt
+}
+
+func reverseOrderVersions(versions []resource.Version) []resource.Version {
+	newVersions := make([]resource.Version, len(versions))
+	p := 0
+	for i := len(versions) - 1; i >= 0; i-- {
+		newVersions[p] = versions[i]
+		p++
+	}
+	return newVersions
 }
