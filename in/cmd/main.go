@@ -32,7 +32,7 @@ func main() {
 	api := gitlab.NewClient(common.GetDefaultClient(request.Source.Insecure), request.Source.PrivateToken)
 	api.SetBaseURL(request.Source.GetBaseURL())
 
-	mr, _, err := api.MergeRequests.GetMergeRequest(request.Source.GetProjectPath(), request.Version.ID)
+	mr, _, err := api.MergeRequests.GetMergeRequest(request.Source.GetProjectPath(), request.Version.ID, &gitlab.GetMergeRequestsOptions{})
 
 	if err != nil {
 		common.Fatal("getting merge request", err)
@@ -74,7 +74,7 @@ func execGitCommand(args []string) {
 }
 
 func createRepositoryUrl(api *gitlab.Client, pid int, token string) *url.URL {
-	project, _, err := api.Projects.GetProject(pid)
+	project, _, err := api.Projects.GetProject(pid, &gitlab.GetProjectOptions{})
 	if err != nil {
 		common.Fatal("reading project from api", err)
 	}

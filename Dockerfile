@@ -1,10 +1,8 @@
-FROM golang:1.11.2-stretch AS builder
+FROM golang:1.13-stretch AS builder
 
 WORKDIR /go/src/github.com/samcontesse/gitlab-merge-request-resource/
 
 COPY . .
-
-ENV GO111MODULE on
 
 RUN GOARCH=amd64 GOOS=linux && \
     go build -o assets/in in/cmd/main.go && \
