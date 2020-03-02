@@ -75,7 +75,7 @@ func main() {
 			}
 		}
 		options := gitlab.UpdateMergeRequestOptions{
-			Labels: currentLabels,
+			Labels: &currentLabels,
 		}
 		_, res, err := api.MergeRequests.UpdateMergeRequest(mr.ProjectID, mr.IID, &options)
 		if res.StatusCode != 200 {
