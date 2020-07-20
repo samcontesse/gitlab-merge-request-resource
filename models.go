@@ -15,6 +15,7 @@ type Source struct {
 	SkipNotMergeable   bool     `json:"skip_not_mergeable,omitempty"`
 	SkipTriggerComment bool     `json:"skip_trigger_comment,omitempty"`
 	ConcourseUrl       string   `json:"concourse_url,omitempty"`
+	PipelineName       string   `json:"pipeline_name,omitempty"`
 	Labels             []string `json:"labels,omitempty"`
 	TargetBranch       string   `json:"target_branch,omitempty"`
 }
@@ -61,6 +62,11 @@ func (source *Source) GetCoucourseUrl() string {
 	}
 }
 
-func GetPipelineName() string {
-	return os.Getenv("BUILD_PIPELINE_NAME")
+func (source *Source) GetPipelineName() string {
+	if source.PipelineName != "" {
+		return source.PipelineName
+	} else {
+		return os.Getenv("BUILD_PIPELINE_NAME")
+	}
+
 }

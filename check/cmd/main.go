@@ -70,7 +70,7 @@ func main() {
 		}
 
 		target := request.Source.GetTargetURL()
-		name := resource.GetPipelineName()
+		name := request.Source.GetPipelineName()
 
 		options := gitlab.SetCommitStatusOptions{
 			Name:      &name,
