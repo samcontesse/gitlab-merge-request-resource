@@ -54,6 +54,15 @@ func main() {
 	execGitCommand([]string{"remote", "update"})
 	execGitCommand([]string{"merge", "--no-ff", "--no-commit", mr.SHA})
 
+	// After merging, clone submodules if git submodules file is present
+	if request.Params.Submodules != "none" && fileExists(".gitmodules") {
+        var source_str = "git@"+request.Source.GetGitlabHost()+":"
+        var target_str = "https:\\/\\/gitlab-ci-token:"+request.Source.PrivateToken+"@"+request.Source.GetGitlabHost()+"\\/"
+
+        execSedCommand([]string{"-i", "s/"+source_str+"/"+target_str+"/g", ".gitmodules"})
+        execGitCommand([]string{"submodule", "update", "--quiet", "--init", "--recursive"})
+    }
+
 	notes, _ := json.Marshal(mr)
 	err = ioutil.WriteFile(".git/merge-request.json", notes, 0644)
 
@@ -62,14 +71,29 @@ func main() {
 	json.NewEncoder(os.Stdout).Encode(response)
 }
 
+func fileExists(filename string) bool {
+    info, err := os.Stat(filename)
+    if os.IsNotExist(err) {
+        return false
+    }
+    return !info.IsDir()
+}
+
+func execSedCommand(args []string) {
+    execCommand("sed", args)
+}
+
 func execGitCommand(args []string) {
-	cmd := "git"
+    execCommand("git", args)
+}
+
+func execCommand(cmd string, args []string) {
 	command := exec.Command(cmd, args...)
 	command.Stdin = os.Stdin
 	command.Stderr = os.Stderr
 	err := command.Run()
 	if err != nil {
-		common.Fatal("executing git "+strings.Join(args, " "), err)
+		common.Fatal("executing "+cmd+" "+strings.Join(args, " "), err)
 	}
 }
 

@@ -40,6 +40,10 @@ Checks if there are new merge requests or merge requests with new commits.
 
 `git clone`s the source branch of the respective merge request.
 
+### Parameters
+
+* `submodules`: Optional. If `none`, submodules will not be fetched. If not specified, or if `all` is explicitly specified, all submodules are fetched.
+
 ### `out`: Update a merge request's merge status
 
 Updates the merge request's `merge_status` which displays nicely in the GitLab UI and allows to only merge changes if they pass the test.
