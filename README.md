@@ -21,14 +21,15 @@ resources:
 
 * `uri`: (required) The location of the repository (required)
 * `private_token`: (required) Your GitLab user's private token (required, can be found in your profile settings)
-* `insecure`: When set to `true`, SSL verification is turned off 
+* `insecure`: When set to `true`, SSL verification is turned off
 * `skip_work_in_progress`: When set to `true`, merge requests mark as work in progress (WIP) will be skipped. Default `false`
 * `skip_not_mergeable`: When set to `true`, merge requests not marked as mergeable will be skipped. Default `false`
-* `skip_trigger_comment`: When set to `true`, the resource will not look up for `[trigger ci]` merge request comments to manually trigger builds. Default `false`  
-* `concourse_url`: When set, this url will be used to override `ATC_EXTERNAL_URL` during commit status updates. No set default.  
-* `pipeline_name`(string): When set, this url will be used to override `BUILD_PIPELINE_NAME` during commit status updates.  
+* `skip_trigger_comment`: When set to `true`, the resource will not look up for `[trigger ci]` merge request comments to manually trigger builds. Default `false`
+* `concourse_url`: When set, this url will be used to override `ATC_EXTERNAL_URL` during commit status updates. No set default.
+* `pipeline_name`(string): When set, this url will be used to override `BUILD_PIPELINE_NAME` during commit status updates.
 * `labels`(string[]): Filter merge requests by label`[]`
 * `target_branch`(string): Filter merge requests by target_branch. Default is empty string.
+* `submodules`(string): By default initializes all GIT Submodules found in `.gitmodules` file. Set it to `none` to disable.
 
 ## Behavior
 
@@ -39,6 +40,10 @@ Checks if there are new merge requests or merge requests with new commits.
 ### `in`: Clone merge request source branch
 
 `git clone`s the source branch of the respective merge request.
+
+### Parameters
+
+* `submodules`: Optional. If `none`, submodules will not be fetched. If not specified, or if `all` is explicitly specified, all submodules are fetched.
 
 ### `out`: Update a merge request's merge status
 

@@ -18,6 +18,7 @@ type Source struct {
 	PipelineName       string   `json:"pipeline_name,omitempty"`
 	Labels             []string `json:"labels,omitempty"`
 	TargetBranch       string   `json:"target_branch,omitempty"`
+	Submodules         string   `json:"submodules"`
 }
 
 type Version struct {
@@ -37,6 +38,12 @@ func (source *Source) GetBaseURL() string {
 	r, _ := regexp.Compile("https?://[^/]+")
 	host := r.FindString(source.URI)
 	return host + "/api/v4"
+}
+
+// GetGitlabServerDomain extracts the Gitlab Server domain from URI.
+func (source *Source) GetGitlabServerDomain() string {
+	r, _ := regexp.Compile("(https?|ssh)://([^/]*)/(.*)\\.git$")
+	return r.FindStringSubmatch(source.URI)[2]
 }
 
 // GetProjectPath extracts project path from URI (repository URL).

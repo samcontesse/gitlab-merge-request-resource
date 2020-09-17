@@ -2,16 +2,17 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/samcontesse/gitlab-merge-request-resource"
-	"github.com/samcontesse/gitlab-merge-request-resource/common"
-	"github.com/samcontesse/gitlab-merge-request-resource/in"
-	"github.com/xanzy/go-gitlab"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	resource "github.com/samcontesse/gitlab-merge-request-resource"
+	"github.com/samcontesse/gitlab-merge-request-resource/common"
+	"github.com/samcontesse/gitlab-merge-request-resource/in"
+	"github.com/xanzy/go-gitlab"
 )
 
 func main() {
@@ -54,6 +55,16 @@ func main() {
 	execGitCommand([]string{"remote", "update"})
 	execGitCommand([]string{"merge", "--no-ff", "--no-commit", mr.SHA})
 
+	// After merging, clone submodules if git submodules file is present
+	if request.Source.Submodules != "none" && fileExists(".gitmodules") {
+		var sourceGitlabHost = request.Source.GetGitlabServerDomain()
+
+		var targetGitlabHost = "gitlab-ci-token:" + request.Source.PrivateToken + "@" + sourceGitlabHost
+
+		execSedCommand([]string{"-i", "s/" + sourceGitlabHost + "/" + targetGitlabHost + "/g", ".gitmodules"})
+		execGitCommand([]string{"submodule", "update", "--quiet", "--init", "--recursive"})
+	}
+
 	notes, _ := json.Marshal(mr)
 	err = ioutil.WriteFile(".git/merge-request.json", notes, 0644)
 
@@ -62,14 +73,29 @@ func main() {
 	json.NewEncoder(os.Stdout).Encode(response)
 }
 
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func execSedCommand(args []string) {
+	execCommand("sed", args)
+}
+
 func execGitCommand(args []string) {
-	cmd := "git"
+	execCommand("git", args)
+}
+
+func execCommand(cmd string, args []string) {
 	command := exec.Command(cmd, args...)
 	command.Stdin = os.Stdin
 	command.Stderr = os.Stderr
 	err := command.Run()
 	if err != nil {
-		common.Fatal("executing git "+strings.Join(args, " "), err)
+		common.Fatal("executing "+cmd+" "+strings.Join(args, " "), err)
 	}
 }
 
