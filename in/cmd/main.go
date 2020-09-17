@@ -2,16 +2,17 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/samcontesse/gitlab-merge-request-resource"
-	"github.com/samcontesse/gitlab-merge-request-resource/common"
-	"github.com/samcontesse/gitlab-merge-request-resource/in"
-	"github.com/xanzy/go-gitlab"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	resource "github.com/samcontesse/gitlab-merge-request-resource"
+	"github.com/samcontesse/gitlab-merge-request-resource/common"
+	"github.com/samcontesse/gitlab-merge-request-resource/in"
+	"github.com/xanzy/go-gitlab"
 )
 
 func main() {
@@ -55,13 +56,14 @@ func main() {
 	execGitCommand([]string{"merge", "--no-ff", "--no-commit", mr.SHA})
 
 	// After merging, clone submodules if git submodules file is present
-	if request.Params.Submodules != "none" && fileExists(".gitmodules") {
-        var source_str = "git@"+request.Source.GetGitlabHost()+":"
-        var target_str = "https:\\/\\/gitlab-ci-token:"+request.Source.PrivateToken+"@"+request.Source.GetGitlabHost()+"\\/"
+	if request.Source.Submodules != "none" && fileExists(".gitmodules") {
+		var sourceGitlabHost = request.Source.GetGitlabServerDomain()
 
-        execSedCommand([]string{"-i", "s/"+source_str+"/"+target_str+"/g", ".gitmodules"})
-        execGitCommand([]string{"submodule", "update", "--quiet", "--init", "--recursive"})
-    }
+		var targetGitlabHost = "gitlab-ci-token:" + request.Source.PrivateToken + "@" + sourceGitlabHost
+
+		execSedCommand([]string{"-i", "s/" + sourceGitlabHost + "/" + targetGitlabHost + "/g", ".gitmodules"})
+		execGitCommand([]string{"submodule", "update", "--quiet", "--init", "--recursive"})
+	}
 
 	notes, _ := json.Marshal(mr)
 	err = ioutil.WriteFile(".git/merge-request.json", notes, 0644)
@@ -72,19 +74,19 @@ func main() {
 }
 
 func fileExists(filename string) bool {
-    info, err := os.Stat(filename)
-    if os.IsNotExist(err) {
-        return false
-    }
-    return !info.IsDir()
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
 
 func execSedCommand(args []string) {
-    execCommand("sed", args)
+	execCommand("sed", args)
 }
 
 func execGitCommand(args []string) {
-    execCommand("git", args)
+	execCommand("git", args)
 }
 
 func execCommand(cmd string, args []string) {
