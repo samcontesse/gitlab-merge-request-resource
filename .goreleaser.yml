@@ -1,0 +1,69 @@
+---
+project_name: gitlab-merge-request-resource
+
+before:
+  hooks:
+  - go mod tidy
+
+builds:
+  - &build
+    id: check
+    main: ./check/cmd/main.go
+    binary: 'assets_{{ .Os }}_{{ .Arch }}/check'
+    no_unique_dist_dir: true
+    env: [ 'CGO_ENABLED=0' ]
+    goos: [linux]
+    goarch: [amd64]
+  - <<: *build
+    id: in
+    main: ./in/cmd/main.go
+    binary: 'assets_{{ .Os }}_{{ .Arch }}/in'
+  - <<: *build
+    id: out
+    main: ./out/cmd/main.go
+    binary: 'assets_{{ .Os }}_{{ .Arch }}/out'
+
+archives:
+  - id: archives
+    builds: [check, in, out]
+    format: "tar.gz"
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    wrap_in_directory: true
+    files:
+      - README*
+      - assets/*
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+    - 'docs'
+    - '\.md'
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+dockers:
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - "{{ .Env.DOCKER_TARGET }}:latest"
+      - "{{ .Env.DOCKER_TARGET }}:v{{ .Major }}"
+      - "{{ .Env.DOCKER_TARGET }}:v{{ .Major }}.{{ .Minor }}"
+      - "{{ .Env.DOCKER_TARGET }}:v{{ .Version }}"
+    build_flag_templates:
+      # https://github.com/opencontainers/image-spec/
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--platform=linux/amd64"
+
+release:
+  prerelease: auto
+  name_template: '{{.Tag}}'
+
+...
