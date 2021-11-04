@@ -24,10 +24,15 @@ func main() {
 
 	labels := gitlab.Labels(request.Source.Labels)
 
+	// https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
+	sort, err := request.Source.GetSort()
+	if err != nil {
+		common.Fatal("failed to get sort order", err)
+	}
 	options := &gitlab.ListProjectMergeRequestsOptions{
 		State:        gitlab.String("opened"),
 		OrderBy:      gitlab.String("updated_at"),
-		Sort:         gitlab.String("asc"),
+		Sort:         gitlab.String(sort),
 		Labels:       &labels,
 		TargetBranch: gitlab.String(request.Source.TargetBranch),
 	}

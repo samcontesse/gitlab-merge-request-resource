@@ -40,3 +40,33 @@ func TestSource_GetProjectPath_WithoutNamespace(t *testing.T) {
 		t.Errorf("Project path %s expected to be %s", actual, expected)
 	}
 }
+
+func TestSource_GetSort(t *testing.T) {
+	tests := []struct {
+		sort string
+		want string
+		wantErr bool
+	}{
+		{"asc", "asc", false},
+		{"desc", "desc", false},
+		{"", "asc", false},
+		{"invalid", "", true},
+		{"AsC", "asc", false},
+		{"DESC", "desc", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.sort, func(t *testing.T) {
+			source := Source{
+				URI: "https://git.example.com/project.git",
+				Sort: tt.sort,
+			}
+			got, err := source.GetSort()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSort() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if got != tt.want {
+				t.Errorf("GetSort() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
