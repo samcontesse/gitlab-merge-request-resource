@@ -1,9 +1,11 @@
 package resource
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -18,6 +20,7 @@ type Source struct {
 	PipelineName       string   `json:"pipeline_name,omitempty"`
 	Labels             []string `json:"labels,omitempty"`
 	TargetBranch       string   `json:"target_branch,omitempty"`
+	Sort               string   `json:"sort,omitempty"`
 }
 
 type Version struct {
@@ -69,4 +72,15 @@ func (source *Source) GetPipelineName() string {
 		return os.Getenv("BUILD_PIPELINE_NAME")
 	}
 
+}
+
+func (source *Source) GetSort() (string, error) {
+	order := strings.ToLower(source.Sort)
+	switch order {
+	case "":
+		return "asc", nil
+	case "asc", "desc":
+		return order, nil
+	}
+	return "", fmt.Errorf("invalid value for sort: %v", source.Sort)
 }
