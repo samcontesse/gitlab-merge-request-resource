@@ -29,8 +29,10 @@ func main() {
 		common.Fatal("reading request from stdin", err)
 	}
 
-	api := gitlab.NewClient(common.GetDefaultClient(request.Source.Insecure), request.Source.PrivateToken)
-	api.SetBaseURL(request.Source.GetBaseURL())
+	api, err := gitlab.NewClient(request.Source.PrivateToken, gitlab.WithHTTPClient(common.GetDefaultClient(request.Source.Insecure)), gitlab.WithBaseURL(request.Source.GetBaseURL()))
+	if err != nil {
+		common.Fatal("initializing gitlab client", err)
+	}
 
 	mr, _, err := api.MergeRequests.GetMergeRequest(request.Source.GetProjectPath(), request.Version.ID, &gitlab.GetMergeRequestsOptions{})
 

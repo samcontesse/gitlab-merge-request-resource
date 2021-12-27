@@ -41,8 +41,10 @@ func main() {
 	var mr gitlab.MergeRequest
 	json.Unmarshal(raw, &mr)
 
-	api := gitlab.NewClient(common.GetDefaultClient(request.Source.Insecure), request.Source.PrivateToken)
-	api.SetBaseURL(request.Source.GetBaseURL())
+	api, err := gitlab.NewClient(request.Source.PrivateToken, gitlab.WithHTTPClient(common.GetDefaultClient(request.Source.Insecure)), gitlab.WithBaseURL(request.Source.GetBaseURL()))
+	if err != nil {
+		common.Fatal("initializing gitlab client", err)
+	}
 
 	if request.Params.Status != "" {
 		message = message + fmt.Sprintf("Set Status: %s \n", request.Params.Status)
@@ -75,7 +77,7 @@ func main() {
 			}
 		}
 		options := gitlab.UpdateMergeRequestOptions{
-			Labels: &currentLabels,
+			Labels: currentLabels,
 		}
 		_, res, err := api.MergeRequests.UpdateMergeRequest(mr.ProjectID, mr.IID, &options)
 		if res.StatusCode != 200 {
