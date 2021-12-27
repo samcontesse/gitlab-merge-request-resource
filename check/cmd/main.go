@@ -19,8 +19,10 @@ func main() {
 		common.Fatal("reading request from stdin", err)
 	}
 
-	api := gitlab.NewClient(common.GetDefaultClient(request.Source.Insecure), request.Source.PrivateToken)
-	api.SetBaseURL(request.Source.GetBaseURL())
+	api, err := gitlab.NewClient(request.Source.PrivateToken, gitlab.WithHTTPClient(common.GetDefaultClient(request.Source.Insecure)), gitlab.WithBaseURL(request.Source.GetBaseURL()))
+	if err != nil {
+		common.Fatal("initializing gitlab client", err)
+	}
 
 	labels := gitlab.Labels(request.Source.Labels)
 
@@ -33,7 +35,7 @@ func main() {
 		State:        gitlab.String("opened"),
 		OrderBy:      gitlab.String("updated_at"),
 		Sort:         gitlab.String(sort),
-		Labels:       &labels,
+		Labels:       labels,
 		TargetBranch: gitlab.String(request.Source.TargetBranch),
 	}
 	requests, _, err := api.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)
