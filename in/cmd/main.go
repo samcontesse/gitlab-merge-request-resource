@@ -57,7 +57,8 @@ func main() {
 	execGitCommand([]string{"merge", "--no-ff", "--no-commit", mr.SHA})
 
 	notes, _ := json.Marshal(mr)
-	err = ioutil.WriteFile(".git/merge-request.json", notes, 0644)
+	ioutil.WriteFile(".git/merge-request.json", notes, 0644)
+	ioutil.WriteFile(".git/merge-request-source-branch", []byte(mr.SourceBranch), 0644)
 
 	response := in.Response{Version: request.Version, Metadata: buildMetadata(mr, commit)}
 
