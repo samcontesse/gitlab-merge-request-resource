@@ -35,7 +35,7 @@ func main() {
 		State:        gitlab.String("opened"),
 		OrderBy:      gitlab.String("updated_at"),
 		Sort:         gitlab.String(sort),
-		Labels:       labels,
+		Labels:       &labels,
 		TargetBranch: gitlab.String(request.Source.TargetBranch),
 	}
 	requests, _, err := api.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)
