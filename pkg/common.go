@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 func Fatal(doing string, err error) {
@@ -15,4 +16,14 @@ func Fatal(doing string, err error) {
 func GetDefaultClient(insecure bool) *http.Client {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
 	return http.DefaultClient
+}
+
+func matchPath(patterns []string, path string) bool {
+	for _, pattern := range patterns {
+		ok, _ := filepath.Match(pattern, path)
+		if ok {
+			return true
+		}
+	}
+	return false
 }

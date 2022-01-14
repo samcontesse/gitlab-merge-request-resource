@@ -73,6 +73,15 @@ func (command *Command) Run(request Request) (Response, error) {
 			continue
 		}
 
+		match, err := matchPathPatterns(command.client, mr, request.Source)
+		if err != nil {
+			return nil, err
+		}
+
+		if !match {
+			continue
+		}
+
 		target := request.Source.GetTargetURL()
 		name := request.Source.GetPipelineName()
 
@@ -89,6 +98,37 @@ func (command *Command) Run(request Request) (Response, error) {
 	}
 
 	return versions, nil
+}
+
+func matchPathPatterns(api *gitlab.Client, mr *gitlab.MergeRequest, source pkg.Source) (bool, error) {
+
+	if len(source.Paths) == 0 && len(source.IgnorePaths) == 0 {
+		return true, nil
+	}
+
+	modified := 0
+
+	versions, _, err := api.MergeRequests.GetMergeRequestDiffVersions(mr.ProjectID, mr.IID, nil)
+	if err != nil {
+		return false, err
+	}
+
+	if len(versions) > 0 {
+
+		latest := versions[0].ID
+		version, _, err := api.MergeRequests.GetSingleMergeRequestDiffVersion(mr.ProjectID, mr.IID, latest)
+		if err != nil {
+			return false, err
+		}
+
+		for _, d := range version.Diffs {
+			if source.AcceptPath(d.OldPath) || source.AcceptPath(d.NewPath) {
+				modified += 1
+			}
+		}
+	}
+
+	return modified > 0, nil
 }
 
 func getMostRecentUpdateTime(notes []*gitlab.Note, updatedAt *time.Time) *time.Time {
