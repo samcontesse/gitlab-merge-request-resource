@@ -1,36 +1,31 @@
-package main
+package check
 
 import (
-	"encoding/json"
-	"github.com/samcontesse/gitlab-merge-request-resource"
-	"github.com/samcontesse/gitlab-merge-request-resource/check"
-	"github.com/samcontesse/gitlab-merge-request-resource/common"
+	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
 	"github.com/xanzy/go-gitlab"
-	"os"
 	"strings"
 	"time"
 )
 
-func main() {
+type Command struct {
+	client *gitlab.Client
+}
 
-	var request check.Request
-
-	if err := json.NewDecoder(os.Stdin).Decode(&request); err != nil {
-		common.Fatal("reading request from stdin", err)
+func NewCommand(client *gitlab.Client) *Command {
+	return &Command{
+		client: client,
 	}
+}
 
-	api, err := gitlab.NewClient(request.Source.PrivateToken, gitlab.WithHTTPClient(common.GetDefaultClient(request.Source.Insecure)), gitlab.WithBaseURL(request.Source.GetBaseURL()))
-	if err != nil {
-		common.Fatal("initializing gitlab client", err)
-	}
-
+func (command *Command) Run(request Request) (Response, error) {
 	labels := gitlab.Labels(request.Source.Labels)
 
 	// https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
 	sort, err := request.Source.GetSort()
 	if err != nil {
-		common.Fatal("failed to get sort order", err)
+		return Response{}, err
 	}
+
 	options := &gitlab.ListProjectMergeRequestsOptions{
 		State:        gitlab.String("opened"),
 		OrderBy:      gitlab.String("updated_at"),
@@ -38,18 +33,19 @@ func main() {
 		Labels:       &labels,
 		TargetBranch: gitlab.String(request.Source.TargetBranch),
 	}
-	requests, _, err := api.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)
-
+	requests, _, err := command.client.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)
 	if err != nil {
-		common.Fatal("retrieving opened merge requests", err)
+		return Response{}, err
 	}
 
-	var versions []resource.Version
-	versions = make([]resource.Version, 0)
+	versions := make([]pkg.Version, 0)
 
 	for _, mr := range requests {
 
-		commit, _, err := api.Commits.GetCommit(mr.ProjectID, mr.SHA)
+		commit, _, err := command.client.Commits.GetCommit(mr.ProjectID, mr.SHA)
+		if err != nil {
+			return Response{}, err
+		}
 		updatedAt := commit.CommittedDate
 
 		if err != nil {
@@ -61,7 +57,7 @@ func main() {
 		}
 
 		if !request.Source.SkipTriggerComment {
-			notes, _, _ := api.Notes.ListMergeRequestNotes(mr.ProjectID, mr.IID, &gitlab.ListMergeRequestNotesOptions{})
+			notes, _, _ := command.client.Notes.ListMergeRequestNotes(mr.ProjectID, mr.IID, &gitlab.ListMergeRequestNotesOptions{})
 			updatedAt = getMostRecentUpdateTime(notes, updatedAt)
 		}
 
@@ -86,14 +82,13 @@ func main() {
 			State:     gitlab.Pending,
 		}
 
-		api.Commits.SetCommitStatus(mr.SourceProjectID, mr.SHA, &options)
+		_, _, _ = command.client.Commits.SetCommitStatus(mr.SourceProjectID, mr.SHA, &options)
 
-		versions = append(versions, resource.Version{ID: mr.IID, UpdatedAt: updatedAt})
+		versions = append(versions, pkg.Version{ID: mr.IID, UpdatedAt: updatedAt})
 
 	}
 
-	json.NewEncoder(os.Stdout).Encode(versions)
-
+	return versions, nil
 }
 
 func getMostRecentUpdateTime(notes []*gitlab.Note, updatedAt *time.Time) *time.Time {

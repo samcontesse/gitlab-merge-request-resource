@@ -1,21 +1,20 @@
 package out
 
 import (
-	"github.com/samcontesse/gitlab-merge-request-resource"
-	"github.com/samcontesse/gitlab-merge-request-resource/common"
+	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
 	"io/ioutil"
 	"path"
 	"strings"
 )
 
 type Request struct {
-	Source resource.Source `json:"source"`
-	Params Params          `json:"params"`
+	Source pkg.Source `json:"source"`
+	Params Params     `json:"params"`
 }
 
 type Response struct {
-	Version  resource.Version  `json:"version"`
-	Metadata resource.Metadata `json:"metadata"`
+	Version  pkg.Version  `json:"version"`
+	Metadata pkg.Metadata `json:"metadata"`
 }
 
 type Params struct {
@@ -30,17 +29,15 @@ type Comment struct {
 	Text     string `json:"text"`
 }
 
-// Generate comment content
-func (comment Comment) GetContent(basePath string) string {
+func (comment Comment) ReadContent(folder string) (string, error) {
 	var (
 		commentContent string
 		fileContent    string
 	)
 	if comment.FilePath != "" {
-		filePath := path.Join(basePath, comment.FilePath)
-		content, err := ioutil.ReadFile(filePath)
+		content, err := ioutil.ReadFile(path.Join(folder, comment.FilePath))
 		if err != nil {
-			common.Fatal("Can't read from "+filePath, err)
+			return "", err
 		} else {
 			commentContent = string(content)
 			fileContent = string(content)
@@ -52,5 +49,5 @@ func (comment Comment) GetContent(basePath string) string {
 		commentContent = strings.Replace(commentRaw, "$FILE_CONTENT", fileContent, -1)
 	}
 
-	return commentContent
+	return commentContent, nil
 }
