@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
@@ -57,6 +58,20 @@ func (source *Source) GetTargetURL() string {
 	target.Path += "/pipelines/" + url.QueryEscape(os.Getenv("BUILD_PIPELINE_NAME"))
 	target.Path += "/jobs/" + url.QueryEscape(os.Getenv("BUILD_JOB_NAME"))
 	target.Path += "/builds/" + url.QueryEscape(os.Getenv("BUILD_NAME"))
+
+	query := os.Getenv("BUILD_PIPELINE_INSTANCE_VARS")
+	if query != "" {
+		values := url.Values{}
+		var vars map[string]string
+		err := json.Unmarshal([]byte(query), &vars)
+		if err == nil {
+			for k, v := range vars {
+				values.Set(fmt.Sprintf("vars.%s", k), fmt.Sprintf(`"%s"`, v))
+			}
+			target.RawQuery = values.Encode()
+		}
+	}
+
 	return target.String()
 }
 
