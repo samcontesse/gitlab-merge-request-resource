@@ -21,6 +21,8 @@ type Source struct {
 	Labels             []string `json:"labels,omitempty"`
 	TargetBranch       string   `json:"target_branch,omitempty"`
 	Sort               string   `json:"sort,omitempty"`
+	Paths              []string `json:"paths,omitempty"`
+	IgnorePaths        []string `json:"ignore_paths,omitempty"`
 }
 
 type Version struct {
@@ -83,4 +85,20 @@ func (source *Source) GetSort() (string, error) {
 		return order, nil
 	}
 	return "", fmt.Errorf("invalid value for sort: %v", source.Sort)
+}
+
+func (source *Source) AcceptPath(path string) bool {
+
+	excluded := len(source.IgnorePaths) > 0
+	included := len(source.Paths) == 0
+
+	if excluded {
+		excluded = matchPath(source.IgnorePaths, path)
+	}
+
+	if len(source.Paths) > 0 {
+		included = matchPath(source.Paths, path)
+	}
+
+	return !excluded && included
 }
