@@ -4,11 +4,12 @@ project_name: gitlab-merge-request-resource
 before:
   hooks:
   - go mod tidy
+  - ginkgo -r
 
 builds:
   - &build
     id: check
-    main: ./check/cmd/main.go
+    main: ./cli/check/cmd/main.go
     binary: 'assets_{{ .Os }}_{{ .Arch }}/check'
     no_unique_dist_dir: true
     env: [ 'CGO_ENABLED=0' ]
@@ -16,11 +17,11 @@ builds:
     goarch: [amd64]
   - <<: *build
     id: in
-    main: ./in/cmd/main.go
+    main: ./cli/in/cmd/main.go
     binary: 'assets_{{ .Os }}_{{ .Arch }}/in'
   - <<: *build
     id: out
-    main: ./out/cmd/main.go
+    main: ./cli/out/cmd/main.go
     binary: 'assets_{{ .Os }}_{{ .Arch }}/out'
 
 archives:

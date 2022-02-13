@@ -1,13 +1,14 @@
-package common
+package pkg
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"os"
 )
 
 func Fatal(doing string, err error) {
-	println("error " + doing + ": " + err.Error())
+	fmt.Fprintf(os.Stderr, "error %s: %s\n", doing, err)
 	os.Exit(1)
 }
 
