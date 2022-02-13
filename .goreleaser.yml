@@ -4,7 +4,6 @@ project_name: gitlab-merge-request-resource
 before:
   hooks:
   - go mod tidy
-  - ginkgo -r
 
 builds:
   - &build
