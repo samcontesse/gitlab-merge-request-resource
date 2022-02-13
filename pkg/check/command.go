@@ -32,7 +32,9 @@ func (command *Command) Run(request Request) (Response, error) {
 		Sort:         gitlab.String(sort),
 		Labels:       &labels,
 		TargetBranch: gitlab.String(request.Source.TargetBranch),
+		SourceBranch: gitlab.String(request.Source.SourceBranch),
 	}
+
 	requests, _, err := command.client.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)
 	if err != nil {
 		return Response{}, err

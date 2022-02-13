@@ -20,6 +20,7 @@ type Source struct {
 	PipelineName       string   `json:"pipeline_name,omitempty"`
 	Labels             []string `json:"labels,omitempty"`
 	TargetBranch       string   `json:"target_branch,omitempty"`
+	SourceBranch       string   `json:"source_branch,omitempty"`
 	Sort               string   `json:"sort,omitempty"`
 	Paths              []string `json:"paths,omitempty"`
 	IgnorePaths        []string `json:"ignore_paths,omitempty"`
