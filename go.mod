@@ -3,7 +3,7 @@ module github.com/samcontesse/gitlab-merge-request-resource
 go 1.17
 
 require (
-	github.com/onsi/ginkgo/v2 v2.1.1
+	github.com/onsi/ginkgo/v2 v2.1.2
 	github.com/onsi/gomega v1.18.1
 	github.com/xanzy/go-gitlab v0.55.1
 )
