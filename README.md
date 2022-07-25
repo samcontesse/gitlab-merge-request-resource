@@ -2,6 +2,8 @@
 
 A concourse resource to check for new merge requests on GitLab and update the merge request status.
 
+The provided Docker image is Alpine-based.
+
 ## Source Configuration
 
 ```yaml
