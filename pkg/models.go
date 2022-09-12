@@ -14,6 +14,7 @@ type Source struct {
 	URI                string   `json:"uri"`
 	PrivateToken       string   `json:"private_token"`
 	Insecure           bool     `json:"insecure"`
+	Recursive          bool     `json:"recursive,omitempty"`
 	SkipWorkInProgress bool     `json:"skip_work_in_progress,omitempty"`
 	SkipNotMergeable   bool     `json:"skip_not_mergeable,omitempty"`
 	SkipTriggerComment bool     `json:"skip_trigger_comment,omitempty"`
