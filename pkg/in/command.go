@@ -13,12 +13,14 @@ import (
 type Command struct {
 	client *gitlab.Client
 	runner GitRunner
+	agent  AgentRunner
 }
 
 func NewCommand(client *gitlab.Client) *Command {
 	return &Command{
 		client,
 		NewRunner(),
+		NewAgentRunner(),
 	}
 }
 
@@ -68,6 +70,23 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 	err = command.runner.Run("clone", "-c", "http.sslVerify="+strconv.FormatBool(!request.Source.Insecure), "-o", "target", "-b", mr.TargetBranch, target.String(), destination)
 	if err != nil {
 		return Response{}, err
+	}
+
+	if (request.Source.SshKeys != nil) && (len(request.Source.SshKeys) != 0) {
+		err = command.runner.Run("config", "--global", "core.sshCommand", "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no")
+		if err != nil {
+			return Response{}, err
+		}
+		err = command.agent.Start()
+		if err != nil {
+			return Response{}, err
+		}
+		for _, key := range request.Source.SshKeys {
+			err = command.agent.AddKey(key)
+			if err != nil {
+				return Response{}, err
+			}
+		}
 	}
 
 	os.Chdir(destination)

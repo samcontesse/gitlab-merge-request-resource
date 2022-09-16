@@ -26,6 +26,7 @@ type Source struct {
 	Sort               string   `json:"sort,omitempty"`
 	Paths              []string `json:"paths,omitempty"`
 	IgnorePaths        []string `json:"ignore_paths,omitempty"`
+	SshKeys            []string `json:"ssh_keys,omitempty"`
 }
 
 type Version struct {
