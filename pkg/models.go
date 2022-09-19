@@ -26,6 +26,8 @@ type Source struct {
 	Sort               string   `json:"sort,omitempty"`
 	Paths              []string `json:"paths,omitempty"`
 	IgnorePaths        []string `json:"ignore_paths,omitempty"`
+	UserEmail          string   `json:"user_email,omitempty"`
+	UserName           string   `json:"user_name,omitempty"`
 }
 
 type Version struct {

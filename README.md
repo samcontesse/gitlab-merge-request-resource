@@ -36,6 +36,7 @@ resources:
 * `source_branch`(string): Filter merge requests by source_branch. Default is empty string.
 * `sort` (string): Merge requests sorting order, either `asc` (default) or `desc` to reverse.
 * `recursive`: When set to `true`, will pull submodules by issuing a `git submodule update --init --recursive`.  Note that if your submodules are hosted on the same server, be sure to [use a relative path](https://www.gniibe.org/memo/software/git/using-submodule.html) to avoid ssh/https protocol clashing (as the MR is fetched via https, this resource would have no way to authenticate a git+ssh connection).
+* `user_email`, `user_name`: Email and username of dummy committer identity used when pulling the MR.  Defaults to `git@example.com` and `git` respectively.
 
 ## Behavior
 
