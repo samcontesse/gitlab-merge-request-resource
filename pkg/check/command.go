@@ -43,16 +43,17 @@ func (command *Command) Run(request Request) (Response, error) {
 	versions := make([]pkg.Version, 0)
 
 	for _, mr := range requests {
+		if mr.SHA == nil {
+			// 1. skip orphan MRs
+			continue
+		}
 
 		commit, _, err := command.client.Commits.GetCommit(mr.ProjectID, mr.SHA)
 		if err != nil {
 			return Response{}, err
-		}
-		updatedAt := commit.CommittedDate
+		}		
 
-		if err != nil {
-			continue
-		}
+		updatedAt := commit.CommittedDate
 
 		if strings.Contains(commit.Title, "[skip ci]") || strings.Contains(commit.Message, "[skip ci]") {
 			continue
