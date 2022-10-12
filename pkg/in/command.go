@@ -60,6 +60,14 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 	}
 
 	os.Chdir(destination)
+
+	if request.Source.Recursive {
+		err = command.runner.Run("submodule", "update", "--init", "--recursive")
+		if err != nil {
+			return Response{}, err
+		}
+	}
+
 	command.runner.Run("remote", "add", "source", source.String())
 	command.runner.Run("remote", "update")
 	command.runner.Run("merge", "--no-ff", "--no-commit", mr.SHA)
