@@ -1,6 +1,6 @@
 module github.com/samcontesse/gitlab-merge-request-resource
 
-go 1.17
+go 1.19
 
 require (
 	github.com/onsi/ginkgo/v2 v2.3.0
