@@ -7,7 +7,7 @@ import (
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg/out"
 	"github.com/xanzy/go-gitlab"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -32,7 +32,7 @@ var _ = Describe("Out", func() {
 		context, _ := url.Parse("/api/v4")
 		base := root.ResolveReference(context)
 		client, _ := gitlab.NewClient("$", gitlab.WithBaseURL(base.String()))
-		destination, _ = ioutil.TempDir("", "gitlab-merge-request-resource-out")
+		destination, _ = os.MkdirTemp("", "gitlab-merge-request-resource-out")
 
 		_ = os.Setenv("ATC_EXTERNAL_URL", "https://concourse-ci.company.ltd")
 		_ = os.Setenv("BUILD_TEAM_NAME", "winner")
@@ -56,7 +56,7 @@ var _ = Describe("Out", func() {
 
 			_ = os.Mkdir(path.Join(destination, "repo"), 0755)
 			_ = os.Mkdir(path.Join(destination, "repo", ".git"), 0755)
-			_ = ioutil.WriteFile(path.Join(destination, "repo", ".git", "merge-request.json"), content, 0644)
+			_ = os.WriteFile(path.Join(destination, "repo", ".git", "merge-request.json"), content, 0644)
 		})
 
 		It("Sets the commit status", func() {
@@ -72,7 +72,7 @@ var _ = Describe("Out", func() {
 			}
 
 			mux.HandleFunc("/api/v4/projects/1/statuses/abc", func(w http.ResponseWriter, r *http.Request) {
-				body, _ := ioutil.ReadAll(r.Body)
+				body, _ := io.ReadAll(r.Body)
 				Expect(string(body)).To(ContainSubstring(`"state":"running"`))
 				status := gitlab.CommitStatus{ID: 1, SHA: "abc"}
 				output, _ := json.Marshal(status)
@@ -104,7 +104,7 @@ var _ = Describe("Out", func() {
 
 			_ = os.Mkdir(path.Join(destination, "repo"), 0755)
 			_ = os.Mkdir(path.Join(destination, "repo", ".git"), 0755)
-			_ = ioutil.WriteFile(path.Join(destination, "repo", ".git", "merge-request.json"), content, 0644)
+			_ = os.WriteFile(path.Join(destination, "repo", ".git", "merge-request.json"), content, 0644)
 		})
 
 		It("check Version.ID", func() {
@@ -142,7 +142,7 @@ var _ = Describe("Out", func() {
 
 			_ = os.Mkdir(path.Join(destination, "repo"), 0755)
 			_ = os.Mkdir(path.Join(destination, "repo", ".git"), 0755)
-			_ = ioutil.WriteFile(path.Join(destination, "repo", ".git", "merge-request.json"), content, 0644)
+			_ = os.WriteFile(path.Join(destination, "repo", ".git", "merge-request.json"), content, 0644)
 		})
 
 		It("check Version.ID", func() {
@@ -159,7 +159,7 @@ var _ = Describe("Out", func() {
 			}
 
 			mux.HandleFunc("/api/v4/projects/1/statuses/abc", func(w http.ResponseWriter, r *http.Request) {
-				body, _ := ioutil.ReadAll(r.Body)
+				body, _ := io.ReadAll(r.Body)
 				Expect(string(body)).To(ContainSubstring(`"state":"running"`))
 				status := gitlab.CommitStatus{ID: 1, SHA: "abc"}
 				output, _ := json.Marshal(status)
@@ -191,8 +191,8 @@ var _ = Describe("Out", func() {
 
 			_ = os.Mkdir(path.Join(destination, "repo"), 0755)
 			_ = os.Mkdir(path.Join(destination, "repo", ".git"), 0755)
-			_ = ioutil.WriteFile(path.Join(destination, "repo", ".git", "merge-request.json"), content, 0644)
-			_ = ioutil.WriteFile(path.Join(destination, "comment.txt"), []byte("lorem ipsum"), 0644)
+			_ = os.WriteFile(path.Join(destination, "repo", ".git", "merge-request.json"), content, 0644)
+			_ = os.WriteFile(path.Join(destination, "comment.txt"), []byte("lorem ipsum"), 0644)
 		})
 
 		It("check Version.ID", func() {

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
 	"github.com/xanzy/go-gitlab"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"strconv"
@@ -95,12 +94,12 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 	}
 
 	notes, _ := json.Marshal(mr)
-	err = ioutil.WriteFile(".git/merge-request.json", notes, 0644)
+	err = os.WriteFile(".git/merge-request.json", notes, 0644)
 	if err != nil {
 		return Response{}, err
 	}
 
-	err = ioutil.WriteFile(".git/merge-request-source-branch", []byte(mr.SourceBranch), 0644)
+	err = os.WriteFile(".git/merge-request-source-branch", []byte(mr.SourceBranch), 0644)
 	if err != nil {
 		return Response{}, err
 	}

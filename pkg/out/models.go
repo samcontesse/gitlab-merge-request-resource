@@ -2,7 +2,7 @@ package out
 
 import (
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 )
@@ -35,7 +35,7 @@ func (comment Comment) ReadContent(folder string) (string, error) {
 		fileContent    string
 	)
 	if comment.FilePath != "" {
-		content, err := ioutil.ReadFile(path.Join(folder, comment.FilePath))
+		content, err := os.ReadFile(path.Join(folder, comment.FilePath))
 		if err != nil {
 			return "", err
 		} else {
