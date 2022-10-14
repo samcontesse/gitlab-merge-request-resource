@@ -35,6 +35,7 @@ resources:
 * `target_branch`(string): Filter merge requests by target_branch. Default is empty string.
 * `source_branch`(string): Filter merge requests by source_branch. Default is empty string.
 * `sort` (string): Merge requests sorting order, either `asc` (default) or `desc` to reverse.
+* `ssh_keys` (string[]): When set to a non-empty array, an ssh-agent will be started and the specified keys will be added to it.  This is only relevant for submodules with an ssh URL and passphrase encrypted keys are not supported.
 * `recursive`: When set to `true`, will pull submodules by issuing a `git submodule update --init --recursive`.  Note that if your submodules are hosted on the same server, be sure to [use a relative path](https://www.gniibe.org/memo/software/git/using-submodule.html) to avoid ssh/https protocol clashing (as the MR is fetched via https, this resource would have no way to authenticate a git+ssh connection).
 
 ## Behavior
