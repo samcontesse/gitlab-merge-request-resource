@@ -27,7 +27,7 @@ resources:
 * `skip_work_in_progress`: When set to `true`, merge requests mark as work in progress (WIP) will be skipped. Default `false`
 * `skip_not_mergeable`: When set to `true`, merge requests not marked as mergeable will be skipped. Default `false`
 * `skip_trigger_comment`: When set to `true`, the resource will not look up for `[trigger ci]` merge request comments to manually trigger builds. Default `false`  
-* `concourse_url`: When set, this url will be used to override `ATC_EXTERNAL_URL` during commit status updates. No set default.  
+* `concourse_url`: When set, this url will be used to override `ATC_EXTERNAL_URL` during commit status updates.
 * `pipeline_name`(string): When set, this url will be used to override `BUILD_PIPELINE_NAME` during commit status updates.  
 * `labels`(string[]): Filter merge requests by label`[]`
 * `paths` (string[]): Include merge request if one of the modified file matches a path pattern (glob). Default: include all. 
@@ -59,7 +59,7 @@ Updates the merge request's `merge_status` which displays nicely in the GitLab U
 
 * `repository`: The path of the repository of the merge request's source branch (required)
 * `status`: The new status of the merge request (required, can be either `pending`, `running`, `success`, `failed`, or `canceled`)
-* `labels`(string[]): The labels you want add to your merge request
+* `labels`(string[]): The labels you want to add to your merge request
 * `comment`: Add a comment for MR. Could be an object with `text`/`file` fields. If just the `file` or `text` is specified it is used to populate the field, if both `file` and `text` are specified then the file is substituted in to replace $FILE_CONTENT in the text.
 
 ## Example
