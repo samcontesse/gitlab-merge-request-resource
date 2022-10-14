@@ -8,7 +8,6 @@ import (
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg/in"
 	"github.com/xanzy/go-gitlab"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -30,7 +29,7 @@ var _ = Describe("In", func() {
 	)
 
 	BeforeEach(func() {
-		destination, _ = ioutil.TempDir("", "gitlab-merge-request-resource-in")
+		destination, _ = os.MkdirTemp("", "gitlab-merge-request-resource-in")
 		t, _ = time.Parse(time.RFC3339, "2022-01-01T08:00:00Z")
 		mux = http.NewServeMux()
 		server = httptest.NewServer(mux)
@@ -105,7 +104,7 @@ var _ = Describe("In", func() {
 				Expect(response.Metadata[0].Value).To(Equal("99"))
 				_, err = os.Stat(filepath.Join(destination, ".git", "merge-request.json"))
 				Expect(err).Should(BeNil())
-				sb, _ := ioutil.ReadFile(filepath.Join(destination, ".git", "merge-request-source-branch"))
+				sb, _ := os.ReadFile(filepath.Join(destination, ".git", "merge-request-source-branch"))
 				Expect(string(sb)).Should(Equal("source-branch"))
 			})
 		})

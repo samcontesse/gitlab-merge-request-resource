@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
 	"github.com/xanzy/go-gitlab"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -31,7 +30,7 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 		return Response{}, err
 	}
 
-	file, err := ioutil.ReadFile(".git/merge-request.json")
+	file, err := os.ReadFile(".git/merge-request.json")
 	if err != nil {
 		return Response{}, err
 	}
