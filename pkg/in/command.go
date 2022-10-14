@@ -33,6 +33,17 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 		return Response{}, err
 	}
 
+	user, _, err := command.client.Users.CurrentUser()
+	err = command.runner.Run("config", "--global", "user.email", user.Email)
+	if err != nil {
+		return Response{}, err
+	}
+
+	err = command.runner.Run("config", "--global", "user.name", user.Name)
+	if err != nil {
+		return Response{}, err
+	}
+
 	mr, _, err := command.client.MergeRequests.GetMergeRequest(request.Source.GetProjectPath(), request.Version.ID, &gitlab.GetMergeRequestsOptions{})
 	if err != nil {
 		return Response{}, err
@@ -61,9 +72,17 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 
 	os.Chdir(destination)
 
-	command.runner.Run("remote", "add", "source", source.String())
-	command.runner.Run("remote", "update")
-	command.runner.Run("merge", "--no-ff", "--no-commit", mr.SHA)
+	err = command.runner.Run("remote", "add", "source", source.String())
+	if err != nil {
+		return Response{}, err
+	}
+
+	err = command.runner.Run("remote", "update")
+	if err != nil {
+		return Response{}, err
+	}
+
+	err = command.runner.Run("merge", "--no-ff", "--no-commit", mr.SHA)
 	if err != nil {
 		return Response{}, err
 	}
