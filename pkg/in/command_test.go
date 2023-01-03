@@ -3,11 +3,6 @@ package in_test
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
-	"github.com/samcontesse/gitlab-merge-request-resource/pkg/in"
-	"github.com/xanzy/go-gitlab"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -15,6 +10,12 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
+	"github.com/samcontesse/gitlab-merge-request-resource/pkg/in"
+	"github.com/xanzy/go-gitlab"
 )
 
 var _ = Describe("In", func() {
@@ -78,6 +79,16 @@ var _ = Describe("In", func() {
 			mux.HandleFunc("/api/v4/projects/42/repository/commits/abc", func(w http.ResponseWriter, r *http.Request) {
 				commit := gitlab.Commit{CommittedDate: &t}
 				output, _ := json.Marshal(commit)
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				w.Write(output)
+			})
+			mux.HandleFunc("/api/v4/user", func(w http.ResponseWriter, r *http.Request) {
+				user := gitlab.User{
+					Username: "test",
+					Email:    "test@example.com",
+				}
+				output, _ := json.Marshal(user)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				w.Write(output)
